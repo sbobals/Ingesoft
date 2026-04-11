@@ -1,4 +1,4 @@
-# INF236-SJ-01
+# Grupo 1
 Integrantes:
 * Fernanda Antonia Pérez Cruz - 202210108-3 - fernanda.perez@alumnos.inf.utfsm.cl
 * Cristofer Ivan Rojas Medina - 202373543-4 - cristofer.rojas@alumnos.inf.utfsm.cl
