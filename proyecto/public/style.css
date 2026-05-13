@@ -1,17 +1,16 @@
 body {
-
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background: #f4f6f9;
   padding: 20px;
 }
 
 h1 {
-
   text-align: center;
+  color: #2c3e50;
+  margin-bottom: 30px;
 }
 
 .container {
-
   display: flex;
   justify-content: center;
   gap: 20px;
@@ -19,25 +18,52 @@ h1 {
 }
 
 .card {
-
   width: 220px;
-
   background: white;
-
   padding: 30px;
-
   border-radius: 10px;
-
   text-align: center;
-
   text-decoration: none;
-
   color: black;
-
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: all 0.3s ease; /* Para que el hover sea suave */
 }
 
 .card:hover {
-
   background: #ecf0f1;
+  transform: translateY(-5px); /* Pequeña elevación al pasar el mouse */
+}
+
+/* --- Clases extra para el Resumen Financiero --- */
+
+.card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: #34495e;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.card p {
+  margin: 10px 0;
+  font-size: 0.9rem;
+  color: #666;
+  display: flex;
+  justify-content: space-between; /* Alinea etiqueta a la izq y monto a la der */
+}
+
+.card hr {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 15px 0;
+}
+
+.saldo-positivo {
+  color: #27ae60; /* Verde */
+  font-weight: bold;
+}
+
+.saldo-negativo {
+  color: #e74c3c; /* Rojo */
+  font-weight: bold;
 }

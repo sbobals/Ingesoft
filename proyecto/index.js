@@ -6,7 +6,8 @@ const port = 3000;
 
 app.use(express.json());
 app.use(express.static('public'));
-
+app.set('view engine', 'ejs');
+const PDFDocument = require('pdfkit');
 /* =========================
    RUTA PRINCIPAL
 ========================= */
@@ -125,94 +126,522 @@ app.get('/beneficios', async (req, res) => {
 });
 
 /* =========================
+   PALETA DE COLORES
+========================= */
+const COLORS = {
+  primary:      '#1E3A8A',
+  primaryLight: '#3B5FC0',
+  danger:       '#DC2626',
+  dangerBg:     '#FEF2F2',
+  success:      '#16A34A',
+  successBg:    '#F0FDF4',
+  purple:       '#7C3AED',
+  purpleBg:     '#F5F3FF',
+  dark:         '#111827',
+  gray:         '#6B7280',
+  lightGray:    '#F9FAFB',
+  border:       '#E5E7EB',
+  white:        '#FFFFFF',
+};
+
+/* =========================
    RESUMEN FINANCIERO
 ========================= */
 app.get('/resumen', async (req, res) => {
-
   try {
+    const inicio = req.query.inicio || '2025-01-01';
+    const fin    = req.query.fin    || '2026-12-31';
 
     const result = await pool.query(`
       SELECT
+        e.id,
         e.nombre,
-
-        COALESCE(SUM(DISTINCT d.monto),0) AS deuda,
-
-        COALESCE(SUM(DISTINCT p.monto),0) AS pagos,
-
-        COALESCE(SUM(DISTINCT b.cobertura),0) AS beneficios
-
+        COALESCE(SUM(DISTINCT d.monto),     0) AS deuda,
+        COALESCE(SUM(DISTINCT p.monto),     0) AS pagos,
+        COALESCE(SUM(DISTINCT b.cobertura), 0) AS beneficios
       FROM estudiantes e
-
       LEFT JOIN deudas d
-      ON e.id = d.estudiante_id
-
+        ON e.id = d.estudiante_id
+        AND d.fecha_vencimiento BETWEEN $1 AND $2
       LEFT JOIN pagos p
-      ON e.id = p.estudiante_id
-
+        ON e.id = p.estudiante_id
+        AND p.fecha BETWEEN $1 AND $2
       LEFT JOIN beneficios b
-      ON e.id = b.estudiante_id
+        ON e.id = b.estudiante_id
+        AND b.vigencia BETWEEN $1 AND $2
+      GROUP BY e.id, e.nombre
+      ORDER BY e.nombre ASC
+    `, [inicio, fin]);
 
-      GROUP BY e.nombre
-    `);
-
-    let cards = '';
+    let totalDeuda = 0, totalPagos = 0, totalBeneficios = 0;
 
     result.rows.forEach(r => {
-
-      const saldo =
-        r.deuda - r.pagos - r.beneficios;
-
-      cards += `
-        <div class="card">
-
-          <h2>${r.nombre}</h2>
-
-          <p>Deuda: $${r.deuda}</p>
-
-          <p>Pagos: $${r.pagos}</p>
-
-          <p>Beneficios: $${r.beneficios}</p>
-
-          <hr>
-
-          <h3>Saldo: $${saldo}</h3>
-
-        </div>
-      `;
+      totalDeuda      += Number(r.deuda);
+      totalPagos      += Number(r.pagos);
+      totalBeneficios += Number(r.beneficios);
     });
 
-    res.send(`
-      <html>
+    const saldoGlobal = totalDeuda - totalPagos - totalBeneficios;
 
-      <head>
-
-        <title>Resumen Financiero</title>
-
-        <link rel="stylesheet" href="/style.css">
-
-      </head>
-
-      <body>
-
-        <h1>Dashboard Financiero</h1>
-
-        <div class="container">
-
-          ${cards}
-
-        </div>
-
-      </body>
-
-      </html>
-    `);
+    res.render('resumen', {
+      estudiantes: result.rows,
+      totalDeuda,
+      totalPagos,
+      totalBeneficios,
+      saldoGlobal,
+      inicio,
+      fin,
+    });
 
   } catch (err) {
-
     console.error(err);
+    res.status(500).send('Error al cargar el resumen');
+  }
+});
 
-    res.status(500).send('Error');
+/* =========================
+   HELPERS DE DIBUJO
+========================= */
+function drawTableRow(doc, y, cols, isEven) {
+  if (isEven) {
+    doc.rect(50, y - 5, 510, 22).fill('#F8FAFC');
+  }
+  doc.fillColor(COLORS.dark).fontSize(10).font('Helvetica');
+  cols.forEach(({ text, x }) => {
+    doc.text(String(text ?? '—'), x, y, { lineBreak: false });
+  });
+}
 
+function drawSectionHeader(doc, title, color, bgColor) {
+  const y = doc.y;
+  doc.rect(50, y, 510, 36).fill(bgColor);
+  doc.rect(50, y, 5, 36).fill(color);
+  doc.fillColor(color).fontSize(14).font('Helvetica-Bold')
+     .text(title, 65, y + 10, { lineBreak: false });
+  doc.moveDown(2.5);
+}
+
+function drawTableHeader(doc, cols, color) {
+  const y = doc.y;
+  doc.rect(50, y, 510, 24).fill(color);
+  doc.fillColor(COLORS.white).fontSize(10).font('Helvetica-Bold');
+  cols.forEach(({ label, x }) => {
+    doc.text(label, x, y + 7, { lineBreak: false });
+  });
+  doc.moveDown(1.8);
+}
+
+function drawDivider(doc, marginTop = 0.5) {
+  doc.moveDown(marginTop);
+  doc.moveTo(50, doc.y).lineTo(560, doc.y)
+     .strokeColor(COLORS.border).lineWidth(0.5).stroke();
+  doc.moveDown(0.5);
+}
+
+function drawSummaryCard(doc, x, y, w, label, amount, color) {
+  doc.rect(x, y, w, 62).fill(COLORS.white);
+  doc.rect(x, y, w, 3).fill(color);
+  doc.fillColor(COLORS.gray).fontSize(9).font('Helvetica')
+     .text(label, x + 12, y + 12, { width: w - 20, lineBreak: false });
+  doc.fillColor(color).fontSize(16).font('Helvetica-Bold')
+     .text(`$${Number(amount).toLocaleString('es-CL')}`, x + 12, y + 28, {
+       width: w - 20, lineBreak: false,
+     });
+}
+
+/* =========================
+   REPORTE PDF
+========================= */
+app.get('/reporte/:id', async (req, res) => {
+  try {
+    const estudianteId = req.params.id;
+    const inicio = req.query.inicio || '2025-01-01';
+    const fin    = req.query.fin    || '2026-12-31';
+
+    /* — CONSULTAR DATOS — */
+    const estudiante = await pool.query(
+      `SELECT * FROM estudiantes WHERE id = $1`,
+      [estudianteId]
+    );
+
+    if (estudiante.rows.length === 0) {
+      return res.status(404).send('Estudiante no encontrado');
+    }
+
+    const deudas = await pool.query(
+      `SELECT * FROM deudas
+       WHERE estudiante_id = $1
+       AND fecha_vencimiento BETWEEN $2 AND $3`,
+      [estudianteId, inicio, fin]
+    );
+
+    const pagos = await pool.query(
+      `SELECT * FROM pagos
+       WHERE estudiante_id = $1
+       AND fecha BETWEEN $2 AND $3`,
+      [estudianteId, inicio, fin]
+    );
+
+    const beneficios = await pool.query(
+      `SELECT * FROM beneficios
+       WHERE estudiante_id = $1
+       AND vigencia BETWEEN $2 AND $3`,
+      [estudianteId, inicio, fin]
+    );
+
+    /* — CALCULAR TOTALES — */
+    const totalDeudas     = deudas.rows.reduce((acc, d) => acc + Number(d.monto), 0);
+    const totalPagos      = pagos.rows.reduce((acc, p) => acc + Number(p.monto), 0);
+    const totalBeneficios = beneficios.rows.reduce((acc, b) => acc + Number(b.cobertura), 0);
+    const saldo           = totalDeudas - totalPagos - totalBeneficios;
+
+    const fmtDate  = (val) => val ? new Date(val).toISOString().split('T')[0] : '—';
+    const fmtMoney = (n)   => `$${Number(n).toLocaleString('es-CL')}`;
+
+    /* — CREAR PDF — */
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename=reporte-${estudianteId}.pdf`);
+    doc.pipe(res);
+
+    /* ── HEADER ── */
+    doc.rect(0, 0, 612, 110).fill(COLORS.primary);
+    doc.rect(0, 105, 612, 5).fill(COLORS.primaryLight);
+
+    doc.fillColor(COLORS.white).fontSize(26).font('Helvetica-Bold')
+       .text('Reporte Financiero', 50, 28, { lineBreak: false });
+
+    doc.fillColor('rgba(255,255,255,0.7)').fontSize(10).font('Helvetica')
+       .text('Sistema Financiero Estudiantil', 50, 60, { lineBreak: false });
+
+    const fechaHoy = new Date().toLocaleDateString('es-CL', {
+      day: '2-digit', month: 'long', year: 'numeric'
+    });
+    doc.fillColor(COLORS.white).fontSize(10)
+       .text(`Generado: ${fechaHoy}`, 350, 28, {
+         width: 210, align: 'right', lineBreak: false
+       });
+
+    doc.y = 130;
+
+    /* ── TARJETA ESTUDIANTE ── */
+    doc.rect(50, doc.y, 510, 60).fill(COLORS.lightGray);
+    doc.rect(50, doc.y, 3, 60).fill(COLORS.primary);
+
+    const cardY = doc.y + 12;
+    doc.fillColor(COLORS.gray).fontSize(9).font('Helvetica')
+       .text('ESTUDIANTE', 65, cardY, { lineBreak: false });
+    doc.fillColor(COLORS.dark).fontSize(16).font('Helvetica-Bold')
+       .text(estudiante.rows[0].nombre, 65, cardY + 14, { lineBreak: false });
+
+    doc.fillColor(COLORS.gray).fontSize(9).font('Helvetica')
+       .text('PERÍODO', 380, cardY, { lineBreak: false });
+    doc.fillColor(COLORS.dark).fontSize(11).font('Helvetica-Bold')
+       .text(`${inicio}  -  ${fin}`, 380, cardY + 14, { lineBreak: false });
+
+    doc.y = cardY + 60;
+    drawDivider(doc, 0.8);
+
+    /* ── SECCIÓN DEUDAS ── */
+    drawSectionHeader(doc, '  DEUDAS', COLORS.danger, COLORS.dangerBg);
+    drawTableHeader(doc, [
+      { label: 'CONCEPTO / ID', x: 65  },
+      { label: 'MONTO',         x: 280 },
+      { label: 'ESTADO',        x: 370 },
+      { label: 'VENCIMIENTO',   x: 460 },
+    ], COLORS.danger);
+
+    if (deudas.rows.length === 0) {
+      doc.fillColor(COLORS.gray).fontSize(10)
+         .text('Sin deudas en el período.', 65, doc.y);
+      doc.moveDown();
+    } else {
+      deudas.rows.forEach((d, i) => {
+        const y = doc.y;
+        drawTableRow(doc, y, [
+          { text: d.concepto || `Deuda #${d.id}`, x: 65  },
+          { text: fmtMoney(d.monto),               x: 280 },
+          { text: d.estado,                         x: 370 },
+          { text: fmtDate(d.fecha_vencimiento),     x: 460 },
+        ], i % 2 === 0);
+        doc.moveDown(1.4);
+      });
+    }
+
+    drawDivider(doc);
+
+    /* ── SECCIÓN PAGOS ── */
+    drawSectionHeader(doc, '  PAGOS', COLORS.success, COLORS.successBg);
+    drawTableHeader(doc, [
+      { label: 'REFERENCIA', x: 65  },
+      { label: 'MONTO',      x: 280 },
+      { label: 'FECHA',      x: 460 },
+    ], COLORS.success);
+
+    if (pagos.rows.length === 0) {
+      doc.fillColor(COLORS.gray).fontSize(10)
+         .text('Sin pagos en el período.', 65, doc.y);
+      doc.moveDown();
+    } else {
+      pagos.rows.forEach((p, i) => {
+        const y = doc.y;
+        drawTableRow(doc, y, [
+          { text: p.referencia || `Pago #${p.id}`, x: 65  },
+          { text: fmtMoney(p.monto),                x: 280 },
+          { text: fmtDate(p.fecha),                 x: 460 },
+        ], i % 2 === 0);
+        doc.moveDown(1.4);
+      });
+    }
+
+    drawDivider(doc);
+
+    /* ── SECCIÓN BENEFICIOS ── */
+    drawSectionHeader(doc, '  BENEFICIOS', COLORS.purple, COLORS.purpleBg);
+    drawTableHeader(doc, [
+      { label: 'TIPO',      x: 65  },
+      { label: 'COBERTURA', x: 280 },
+      { label: 'VIGENCIA',  x: 460 },
+    ], COLORS.purple);
+
+    if (beneficios.rows.length === 0) {
+      doc.fillColor(COLORS.gray).fontSize(10)
+         .text('Sin beneficios en el período.', 65, doc.y);
+      doc.moveDown();
+    } else {
+      beneficios.rows.forEach((b, i) => {
+        const y = doc.y;
+        drawTableRow(doc, y, [
+          { text: b.tipo,                x: 65  },
+          { text: fmtMoney(b.cobertura), x: 280 },
+          { text: fmtDate(b.vigencia),   x: 460 },
+        ], i % 2 === 0);
+        doc.moveDown(1.4);
+      });
+    }
+
+    doc.moveDown();
+
+    /* ── RESUMEN FINAL ── */
+    const resumenY = doc.y;
+    doc.rect(50, resumenY, 510, 160).fill('#F1F5F9');
+
+    doc.fillColor(COLORS.dark).fontSize(13).font('Helvetica-Bold')
+       .text('RESUMEN FINANCIERO', 65, resumenY + 14, { lineBreak: false });
+
+    const cW = 155, cGap = 12, cX = 57, cY = resumenY + 38;
+    drawSummaryCard(doc, cX,                    cY, cW, 'Total Deudas',     totalDeudas,     COLORS.danger);
+    drawSummaryCard(doc, cX + cW + cGap,        cY, cW, 'Total Pagos',      totalPagos,      COLORS.success);
+    drawSummaryCard(doc, cX + (cW + cGap) * 2,  cY, cW, 'Total Beneficios', totalBeneficios, COLORS.purple);
+
+    doc.moveTo(57, cY + 74).lineTo(553, cY + 74)
+       .strokeColor(COLORS.border).lineWidth(0.5).stroke();
+
+    const saldoColor = saldo > 0 ? COLORS.danger : COLORS.success;
+    const saldoLabel = saldo > 0 ? 'Saldo Pendiente' : 'Saldo a Favor';
+
+    doc.fillColor(COLORS.gray).fontSize(10).font('Helvetica')
+       .text(saldoLabel, 65, cY + 86, { lineBreak: false });
+    doc.fillColor(saldoColor).fontSize(22).font('Helvetica-Bold')
+       .text(fmtMoney(Math.abs(saldo)), 65, cY + 100, { lineBreak: false });
+
+    /* ── FOOTER ── */
+    doc.rect(0, 792, 612, 50).fill(COLORS.primary);
+    doc.fillColor('rgba(255,255,255,0.6)').fontSize(9).font('Helvetica')
+       .text(
+         'Sistema Financiero Estudiantil  ·  Documento generado automáticamente  ·  Confidencial',
+         50, 802, { align: 'center', width: 512 }
+       );
+
+    /* — FINALIZAR — */
+    doc.end();
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al generar el PDF');
+  }
+});
+/* =========================
+   REPORTE GLOBAL PDF
+========================= */
+app.get('/reporte-global', async (req, res) => {
+  try {
+    const inicio = req.query.inicio || '2025-01-01';
+    const fin    = req.query.fin    || '2026-12-31';
+
+    /* — CONSULTAR DATOS — */
+    const result = await pool.query(`
+      SELECT
+        COALESCE(SUM(d.monto),      0) AS total_deudas,
+        COALESCE(SUM(p.monto),      0) AS total_pagos,
+        COALESCE(SUM(b.cobertura),  0) AS total_beneficios,
+        COUNT(DISTINCT e.id)           AS total_estudiantes
+      FROM estudiantes e
+      LEFT JOIN deudas d
+        ON e.id = d.estudiante_id
+        AND d.fecha_vencimiento BETWEEN $1 AND $2
+      LEFT JOIN pagos p
+        ON e.id = p.estudiante_id
+        AND p.fecha BETWEEN $1 AND $2
+      LEFT JOIN beneficios b
+        ON e.id = b.estudiante_id
+        AND b.vigencia BETWEEN $1 AND $2
+    `, [inicio, fin]);
+
+    const data  = result.rows[0];
+    const saldo = Number(data.total_deudas) - Number(data.total_pagos) - Number(data.total_beneficios);
+
+    const fmtMoney = (n) => `$${Number(n).toLocaleString('es-CL')}`;
+    const fechaHoy = new Date().toLocaleDateString('es-CL', {
+      day: '2-digit', month: 'long', year: 'numeric'
+    });
+
+    /* — CREAR PDF — */
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename=reporte-global.pdf');
+    doc.pipe(res);
+
+    /* ── HEADER ── */
+    doc.rect(0, 0, 612, 110).fill(COLORS.primary);
+    doc.rect(0, 105, 612, 5).fill(COLORS.primaryLight);
+
+    doc.fillColor(COLORS.white).fontSize(26).font('Helvetica-Bold')
+       .text('Reporte Financiero Global', 50, 28, { lineBreak: false });
+
+    doc.fillColor('rgba(255,255,255,0.7)').fontSize(10).font('Helvetica')
+       .text('Sistema Financiero Estudiantil', 50, 60, { lineBreak: false });
+
+    doc.fillColor(COLORS.white).fontSize(10)
+       .text(`Generado: ${fechaHoy}`, 350, 28, {
+         width: 210, align: 'right', lineBreak: false
+       });
+
+    doc.y = 130;
+
+    /* ── TARJETA PERÍODO ── */
+    doc.rect(50, doc.y, 510, 60).fill(COLORS.lightGray);
+    doc.rect(50, doc.y, 3, 60).fill(COLORS.primary);
+
+    const cardY = doc.y + 12;
+
+    doc.fillColor(COLORS.gray).fontSize(9).font('Helvetica')
+       .text('PERÍODO ANALIZADO', 65, cardY, { lineBreak: false });
+    doc.fillColor(COLORS.dark).fontSize(16).font('Helvetica-Bold')
+       .text(`${inicio}  -  ${fin}`, 65, cardY + 14, { lineBreak: false });
+
+    doc.fillColor(COLORS.gray).fontSize(9).font('Helvetica')
+       .text('TOTAL ESTUDIANTES', 380, cardY, { lineBreak: false });
+    doc.fillColor(COLORS.dark).fontSize(16).font('Helvetica-Bold')
+       .text(String(data.total_estudiantes), 380, cardY + 14, { lineBreak: false });
+
+    doc.y = cardY + 72;
+    drawDivider(doc, 0.5);
+
+    /* ── TARJETAS DE MÉTRICAS (3 columnas) ── */
+    const metrics = [
+      { label: 'Total Deudas',     value: fmtMoney(data.total_deudas),     color: COLORS.danger  },
+      { label: 'Total Pagos',      value: fmtMoney(data.total_pagos),      color: COLORS.success },
+      { label: 'Total Beneficios', value: fmtMoney(data.total_beneficios), color: COLORS.purple  },
+    ];
+
+    const mW = 155, mGap = 12, mX = 57, mY = doc.y + 10;
+
+    metrics.forEach((m, i) => {
+      const x = mX + i * (mW + mGap);
+      doc.rect(x, mY, mW, 80).fill(COLORS.white);
+      doc.rect(x, mY, mW, 4).fill(m.color);
+
+      doc.fillColor(COLORS.gray).fontSize(9).font('Helvetica')
+         .text(m.label.toUpperCase(), x + 12, mY + 14, { width: mW - 20, lineBreak: false });
+
+      doc.fillColor(m.color).fontSize(18).font('Helvetica-Bold')
+         .text(m.value, x + 12, mY + 32, { width: mW - 20, lineBreak: false });
+    });
+
+    doc.y = mY + 96;
+    drawDivider(doc, 0.2);
+
+    /* ── GRÁFICO DE BARRAS VISUAL ── */
+    const maxVal = Math.max(
+      Number(data.total_deudas),
+      Number(data.total_pagos),
+      Number(data.total_beneficios),
+      1
+    );
+
+    const barMaxH  = 100;
+    const barW     = 80;
+    const barGap   = 55;
+    const barBaseX = 110;
+
+    // Título PRIMERO
+    doc.fillColor(COLORS.dark).fontSize(13).font('Helvetica-Bold')
+      .text('Distribución Visual', 50, doc.y);
+
+    doc.moveDown(1);
+
+    // barBaseY se calcula DESPUÉS de mover el cursor
+    const barBaseY = doc.y + barMaxH + 10;
+
+    const bars = [
+      { label: 'Deudas',     value: Number(data.total_deudas),     color: COLORS.danger  },
+      { label: 'Pagos',      value: Number(data.total_pagos),       color: COLORS.success },
+      { label: 'Beneficios', value: Number(data.total_beneficios),  color: COLORS.purple  },
+    ];
+
+    bars.forEach((bar, i) => {
+      const x  = barBaseX + i * (barW + barGap);
+      const h  = Math.max((bar.value / maxVal) * barMaxH, 4);
+      const by = barBaseY - h;
+
+      doc.rect(x + 3, by + 3, barW, h).fill('#E2E8F0');
+      doc.rect(x, by, barW, h).fill(bar.color);
+
+      doc.fillColor(COLORS.dark).fontSize(9).font('Helvetica-Bold')
+        .text(fmtMoney(bar.value), x, by - 16, { width: barW, align: 'center', lineBreak: false });
+
+      doc.fillColor(COLORS.gray).fontSize(9).font('Helvetica')
+        .text(bar.label, x, barBaseY + 6, { width: barW, align: 'center', lineBreak: false });
+    });
+
+    doc.moveTo(barBaseX - 10, barBaseY)
+      .lineTo(barBaseX + bars.length * (barW + barGap) - barGap + 10, barBaseY)
+      .strokeColor(COLORS.border).lineWidth(1).stroke();
+
+    doc.y = barBaseY + 30;
+    drawDivider(doc, 0.5);
+
+    /* ── SALDO GLOBAL DESTACADO ── */
+    const saldoColor = saldo > 0 ? COLORS.danger : COLORS.success;
+    const saldoLabel = saldo > 0 ? 'Saldo Pendiente Global' : 'Saldo a Favor Global';
+    const saldoBg    = saldo > 0 ? COLORS.dangerBg : COLORS.successBg;
+
+    const saldoY = doc.y + 10;
+    doc.rect(50, saldoY, 510, 80).fill(saldoBg);
+    doc.rect(50, saldoY, 5, 80).fill(saldoColor);
+
+    doc.fillColor(COLORS.gray).fontSize(10).font('Helvetica')
+       .text(saldoLabel, 70, saldoY + 16, { lineBreak: false });
+
+    doc.fillColor(saldoColor).fontSize(32).font('Helvetica-Bold')
+       .text(fmtMoney(Math.abs(saldo)), 70, saldoY + 32, { lineBreak: false });
+
+    /* ── FOOTER ── */
+    doc.rect(0, 792, 612, 50).fill(COLORS.primary);
+    doc.fillColor('rgba(255,255,255,0.6)').fontSize(9).font('Helvetica')
+       .text(
+         'Sistema Financiero Estudiantil  ·  Documento generado automáticamente  ·  Confidencial',
+         50, 802, { align: 'center', width: 512 }
+       );
+
+    doc.end();
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al generar el PDF');
   }
 });
 /* =========================
