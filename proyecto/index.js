@@ -673,13 +673,16 @@ app.get('/historial/1', async (req, res) => {
       WHERE estudiante_id = $1
     `, [estudianteId]);
 
+	/*Hola*/
+	res.render('historial')
+/*
     res.json({
       estudiante: estudiante.rows[0],
       deudas: deudas.rows,
       pagos: pagos.rows,
       beneficios: beneficios.rows
     });
-
+*/
   } catch (err) {
 
     console.error(err);
