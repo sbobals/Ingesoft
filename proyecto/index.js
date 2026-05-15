@@ -647,7 +647,7 @@ app.get('/reporte-global', async (req, res) => {
 /* =========================
    HISTORIAL FINANCIERO
 ========================= */
-app.get('/historial/:id', async (req, res) => {
+app.get('/historial/1', async (req, res) => {
 
   try {
 
