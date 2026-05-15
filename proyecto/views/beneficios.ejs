@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Beneficios</title>
+  <style>
+    /* Se mantienen todos tus estilos originales de resumen.ejs */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F1F5F9; color: #111827; min-height: 100vh; }
+    .topbar { background: #1E3A8A; padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar-title { color: #fff; font-size: 18px; font-weight: 600; }
+    .content { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+    
+    /* Métricas dinámicas para la simulación */
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .metric-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; padding: 1.25rem; border-top: 3px solid transparent; }
+    .metric-card.neutral { border-top-color: #1E3A8A; }
+    .metric-card.purple  { border-top-color: #7C3AED; }
+    .metric-card.success { border-top-color: #16A34A; }
+    .metric-label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: #6B7280; margin-bottom: 8px; }
+    .metric-value { font-size: 26px; font-weight: 700; }
+
+    /* Estilo de las tarjetas de beneficios */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+    .card { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.2s; }
+    .card:hover { border-color: #7C3AED; }
+    .card-header { padding: 1.25rem; border-bottom: 1px solid #F3F4F6; display: flex; align-items: center; gap: 12px; background: #FAFAFA; }
+    input[type="checkbox"] { width: 20px; height: 20px; accent-color: #7C3AED; }
+    .card-nombre { font-size: 15px; font-weight: 600; }
+    .card-body { padding: 1.25rem; font-size: 13px; }
+    .card-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Simulador de Arancel</div>
+      <div class="topbar-sub">Hito 3 - Gestión de Beneficios</div>
+    </div>
+    <a href="/" style="color:#fff; text-decoration:none; font-size:13px;">&#8592; Volver</a>
+  </div>
+
+  <div class="content">
+    
+    <div class="metrics">
+      <div class="metric-card neutral">
+        <div class="metric-label">Arancel Anual</div>
+        <div class="metric-value" id="display-base" data-base="<%= arancelBase %>">
+          $<%= Number(arancelBase).toLocaleString('es-CL') %>
+        </div>
+      </div>
+      <div class="metric-card purple">
+        <div class="metric-label">Ahorro Simulado</div>
+        <div class="metric-value" id="display-descuento" style="color: #7C3AED;">$0</div>
+      </div>
+      <div class="metric-card success">
+        <div class="metric-label">Costo Proyectado</div>
+        <div class="metric-value" id="display-proyectado" style="color: #16A34A;">
+          $<%= Number(arancelBase).toLocaleString('es-CL') %>
+        </div>
+      </div>
+    </div>
+
+    <h2 style="margin-bottom: 1rem; font-size: 16px;">Selecciona beneficios para evaluar financiamiento</h2>
+
+    <div class="grid">
+        <% if (beneficios && beneficios.length > 0) { %>
+            <% beneficios.forEach(b => { %>
+            <label class="card">
+                <div class="card-header">
+                <input type="checkbox" class="beneficio-chk" value="<%= b.cobertura %>" onchange="actualizarSimulacion()">
+                <span class="card-nombre"><%= b.tipo %></span>
+                </div>
+                <div class="card-body">
+                <div class="card-row">
+                    <span style="color:#6B7280;"><span class="dot" style="background:#16A34A;"></span>Cobertura</span>
+                    <span style="font-weight:600;">$<%= Number(b.cobertura).toLocaleString('es-CL') %></span>
+                </div>
+                <div class="card-row" style="align-items: flex-start;">
+                <span style="color:#6B7280;">
+                    <span class="dot" style="background:#7C3AED;"></span>Vigencia
+                </span>
+                <span style="font-weight:600; text-align: right;">
+                    <%= b.vigencia %> <br>
+                    <small style="font-weight: 400; color: #6B7280; font-size: 10px; display: block; margin-top: 2px;">
+                    año, mes, dia
+                    </small>
+                </span>
+                </div>
+                </div>
+            </label>
+            <% }) %>
+        <% } %>
+    </div>
+  </div>
+
+  <script>
+    function actualizarSimulacion() {
+      const arancelBase = parseInt(document.getElementById('display-base').getAttribute('data-base'));
+      let ahorro = 0;
+      
+      document.querySelectorAll('.beneficio-chk:checked').forEach(chk => {
+        ahorro += parseInt(chk.value);
+      });
+
+      const proyectado = Math.max(0, arancelBase - ahorro);
+
+      document.getElementById('display-descuento').innerText = '$' + ahorro.toLocaleString('es-CL');
+      document.getElementById('display-proyectado').innerText = '$' + proyectado.toLocaleString('es-CL');
+    }
+  </script>
+</body>
+</html>
