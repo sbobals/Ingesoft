@@ -4,114 +4,7 @@
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Historial Estudiante</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #F1F5F9;
-      color: #111827;
-      min-height: 100vh;
-    }
-    
-    /* ── CONTENT ── */
-    .content {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem;
-    }
-    
-    /* ── TOPBAR ── */
-    .topbar {
-      background: #1E3A8A;
-      padding: 0 2rem;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .topbar-title {
-      color: #fff;
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: -0.3px;
-    }
-    .topbar-sub {
-      color: rgba(255,255,255,0.55);
-      font-size: 13px;
-      margin-top: 2px;
-    }
-    .btn-back {
-      color: rgba(255,255,255,0.75);
-      text-decoration: none;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: color 0.15s;
-    }
-    .btn-back:hover { color: #fff; }
-    
-    
-    /* ── FILTRO ── */
-    .filter-bar {
-      background: #fff;
-      border: 1px solid #E5E7EB;
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.5rem;
-    }
-    .filter-bar label {
-      font-size: 13px;
-      color: #6B7280;
-      font-weight: 500;
-    }
-    .filter-bar input[type="date"] {
-      border: 1px solid #E5E7EB;
-      border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 13px;
-      color: #111827;
-      background: #F9FAFB;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-    .filter-bar input[type="date"]:focus { border-color: #1E3A8A; }
-    .btn-filter {
-      background: #1E3A8A;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 7px 18px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .btn-filter:hover { background: #1e40af; }
-    .btn-pdf-global {
-      margin-left: auto;
-      background: #fff;
-      color: #1E3A8A;
-      border: 1px solid #1E3A8A;
-      border-radius: 8px;
-      padding: 7px 18px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.15s;
-    }
-    .btn-pdf-global:hover { background: #EEF2FF; }
-    
-  </style>
+  <link rel="stylesheet" href="/CSS/historial.css">
 </head>
 
 <body>
@@ -125,23 +18,39 @@
     <a href="/" class="btn-back">&#8592; Volver al inicio</a>
   </div>
 
+
 <div class="content">  
   <!-- FILTRO -->
-    <form method="GET" action="/resumen" class="filter-bar">
+    <form method="GET" action="/historial" class="filter-bar">
       <label>Periodo: </label>
       <input type="number" id="year" name="year" min="1900" max="2099" step="1" value="2024">
       <label>Semestre: </label>
       <input type="number" id="semester" name="semester" min="1" max="2" step="1" value="1">
       <button type="submit" class="btn-filter">Filtrar</button>
-      
-        <a href="/"
-        target="_blank"
-        class="btn-pdf-global"
-      >
-        &#128196; PDF Global
-      </a>
     </form>
+    
+    <%Hola("224", "", "")%>
+    <div class="filter-bar">
+      <%
+        function Hola(Deuda, Pagos, Beneficios){
+          %>
+            <label><%= Deuda%></label> 
+          <%
+        }
+      %>
+      
+      <table style="width: 100%">
+        <tr>
+            <th>Semestre</th>
+            <th>Deuda</th>
+            <th>Pagos</th>
+            <th>Beneficios</th>
+        </tr>
+      </table>
+      
+    </div>
 </div>
+
 </body>
 
 </html>
