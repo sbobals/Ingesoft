@@ -268,8 +268,71 @@
       font-size: 14px;
     }
 
+
+    /*-Revisar con cuidado-*/
 	/*--- Historial ---*/
-	table, th, td {
-		border: 1px solid;
-		border-collapse: collapse;
-	}
+	/*--- Historial ---*/
+table {
+    width: 100%;
+    border-collapse: separate; /* Cambiado a separate para permitir border-radius */
+    border-spacing: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #374151; /* Gris oscuro para el texto principal */
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb; /* Borde exterior suave */
+    border-radius: 10px; /* Bordes redondeados como tus tarjetas */
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Sombra sutil */
+    margin-top: 20px;
+}
+
+/* Estilos para el Encabezado */
+th {
+    background-color: #f8fafc; /* Fondo gris muy claro para diferenciar */
+    color: #4b5563; /* Texto secundario */
+    font-weight: 600;
+    font-size: 14px;
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+/* Estilos para las Celdas de Datos */
+td {
+    padding: 14px 16px;
+    font-size: 15px;
+    border-bottom: 1px solid #f3f4f6; /* Línea divisoria interna muy suave */
+}
+
+/* Eliminar el borde inferior de la última fila */
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* Efecto hover opcional para mejorar la navegación visual */
+tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* --- Clases de Utilidad Basadas en tu Dashboard --- */
+
+/* Alineación a la derecha para montos financieros */
+.text-right {
+    text-align: right;
+}
+
+/* Colores heredados del Dashboard */
+.monto-deuda {
+    color: #dc2626; /* Rojo de "Total Deudas" */
+    font-weight: 600;
+}
+
+.monto-pagos {
+    color: #16a34a; /* Verde de "Total Pagos" */
+    font-weight: 600;
+}
+
+.monto-beneficios {
+    color: #7c3aed; /* Morado de "Total Beneficios" */
+    font-weight: 600;
+}

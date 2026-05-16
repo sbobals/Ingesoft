@@ -29,24 +29,42 @@
       <button type="submit" class="btn-filter">Filtrar</button>
     </form>
     
-    <%Hola("224", "", "")%>
     <div class="filter-bar">
       <%
-        function Hola(Deuda, Pagos, Beneficios){
+        function InsertSemester(Semester, Deuda, Pagos, Beneficios){
           %>
-            <label><%= Deuda%></label> 
+          <tr>
+            <td><%= Semester%></td>
+              <td class="text-right monto-deuda"> $<%= Deuda%></td>
+              <td class="text-right monto-pagos"> $<%= Pagos%></td>
+              <td class="text-right monto-beneficios"> $<%= Beneficios%></td>
+            </tr> 
           <%
         }
       %>
       
-      <table style="width: 100%">
-        <tr>
-            <th>Semestre</th>
-            <th>Deuda</th>
-            <th>Pagos</th>
-            <th>Beneficios</th>
-        </tr>
-      </table>
+      <table>
+  <thead>
+    <tr>
+      <th>Semestre</th>
+      <th class="text-right">Deuda</th>
+      <th class="text-right">Pagos</th>
+      <th class="text-right">Beneficios</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2025-1</td>
+      <td class="text-right monto-deuda">$150.000</td>
+      <td class="text-right monto-pagos">$150.000</td>
+      <td class="text-right monto-beneficios">$30.000</td>
+    </tr>
+    <%InsertSemester("2024", "224", "", "")%>
+    <%InsertSemester("224", "", "")%>
+    <%InsertSemester("224", "", "")%>
+  </tbody>
+  
+</table>
       
     </div>
 </div>
