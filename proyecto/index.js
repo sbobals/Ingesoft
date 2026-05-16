@@ -200,9 +200,9 @@ app.get('/pagos', async (req, res) => {
    VER BENEFICIOS
 ========================= */
 app.get('/beneficios', async (req, res) => {
-
   try {
-
+    const arancelBase = 6500000; // El arancel anual para simular
+    
     const result = await pool.query(`
       SELECT
         beneficios.id,
@@ -211,17 +211,17 @@ app.get('/beneficios', async (req, res) => {
         beneficios.cobertura,
         beneficios.vigencia
       FROM beneficios
-      JOIN estudiantes
-      ON beneficios.estudiante_id = estudiantes.id
+      JOIN estudiantes ON beneficios.estudiante_id = estudiantes.id
     `);
 
-    res.json(result.rows);
+    res.render('beneficios', { 
+      arancelBase: arancelBase, 
+      beneficios: result.rows 
+    });
 
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).send('Error obteniendo beneficios');
+    res.status(500).send('Error cargando beneficios');
   }
 });
 
