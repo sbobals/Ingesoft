@@ -109,7 +109,7 @@ app.get('/beneficios', async (req, res) => {
         estudiantes.nombre,
         beneficios.tipo,
         beneficios.cobertura,
-        beneficios.vigencia
+        TO_CHAR(beneficios.vigencia, 'YYYY-MM-DD') AS vigencia
       FROM beneficios
       JOIN estudiantes ON beneficios.estudiante_id = estudiantes.id
     `);
