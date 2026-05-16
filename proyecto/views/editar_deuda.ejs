@@ -3,28 +3,104 @@
 <head>
   <meta charset="UTF-8">
   <title>Editar Deuda</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f3f4f6;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #1E3A8A;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background: #16A34A;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #15803d;
+    }
+
+    .back {
+      display: block;
+      margin-top: 15px;
+      text-align: center;
+      text-decoration: none;
+      color: #6B7280;
+    }
+  </style>
 </head>
+
 <body>
 
-<h1>Editar Deuda</h1>
+<div class="container">
 
-<form action="/deudas/editar/<%= deuda.id %>" method="POST">
-  
-  <label>Monto:</label>
-  <input type="number" name="monto" value="<%= deuda.monto %>"><br><br>
+  <h1>Editar Deuda</h1>
 
-  <label>Estado:</label>
-  <select name="estado">
-    <option value="pendiente" <%= deuda.estado === 'pendiente' ? 'selected' : '' %>>Pendiente</option>
-    <option value="pagado" <%= deuda.estado === 'pagado' ? 'selected' : '' %>>Pagado</option>
-  </select><br><br>
+  <form action="/deudas/editar/<%= deuda.id %>" method="POST">
 
-  <label>Fecha vencimiento:</label>
-  <input type="date" name="fecha_vencimiento" value="<%= deuda.fecha_vencimiento %>"><br><br>
+    <label>Monto</label>
+    <input type="number" name="monto" value="<%= deuda.monto %>" required>
 
-  <button type="submit">Actualizar</button>
+    <label>Estado</label>
+    <select name="estado">
+      <option value="pendiente" <%= deuda.estado === 'pendiente' ? 'selected' : '' %>>
+        Pendiente
+      </option>
+      <option value="pagado" <%= deuda.estado === 'pagado' ? 'selected' : '' %>>
+        Pagado
+      </option>
+    </select>
 
-</form>
+    <label>Fecha vencimiento</label>
+    <input 
+      type="date" 
+      name="fecha_vencimiento"
+      value="<%= deuda.fecha_vencimiento ? new Date(deuda.fecha_vencimiento).toISOString().split('T')[0] : '' %>"
+    >
+
+    <button type="submit">Actualizar</button>
+
+  </form>
+
+  <a href="/deudas" class="back">← Volver</a>
+
+</div>
 
 </body>
 </html>
