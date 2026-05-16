@@ -1,60 +1,107 @@
 <!DOCTYPE html>
-
-<html>
-
+<html lang="es">
 <head>
-
+  <meta charset="UTF-8">
   <title>Sistema Financiero</title>
 
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F1F5F9;
+      margin: 0;
+      padding: 0;
+    }
 
+    /* HEADER */
+    .topbar {
+      background: #1E3A8A;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    /* GRID */
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 0 20px;
+    }
+
+    /* CARD */
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 30px 20px;
+      text-align: center;
+      text-decoration: none;
+      color: #111827;
+      border: 1px solid #E5E7EB;
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 25px;
+    }
+
+    /* COLORES POR SECCIÓN */
+    .deudas      { border-top: 10px solid #DC2626; }
+    .pagos       { border-top: 10px solid #16A34A; }
+    .beneficios  { border-top: 10px solid #7C3AED; }
+    .resumen     { border-top: 10px solid #1E3A8A; }
+    .estudiantes { border-top: 10px solid #F59E0B; }
+    .historial   { border-top: 10px solid #0EA5E9; }
+
+  </style>
 </head>
 
 <body>
 
-  <h1>Sistema Financiero Estudiantil</h1>
+  <div class="topbar">
+    <h1>Sistema Financiero Estudiantil</h1>
+  </div>
 
   <div class="container">
 
-    <a href="/deudas" class="card">
-
+    <a href="/deudas" class="card deudas">
       <h2>Deudas</h2>
-
     </a>
 
-    <a href="/pagos" class="card">
-
+    <a href="/pagos" class="card pagos">
       <h2>Pagos</h2>
-
     </a>
 
-    <a href="/beneficios" class="card">
-
+    <a href="/beneficios" class="card beneficios">
       <h2>Beneficios</h2>
-
     </a>
 
-    <a href="/resumen" class="card">
-
-      <h2>Resumen para ejecutivo</h2>
-
-    </a>
+    <a href="/resumen" class="card resumen">
+      <h2>Resumen Ejecutivo</h2>
     </a>
 
-    <a href="/estudiantes" class="card">
-
-      <h2>estudiantes</h2>
-
+    <a href="/estudiantes" class="card estudiantes">
+      <h2>Estudiantes</h2>
     </a>
 
     <a href="/historial/1" class="card">
 	
       <h2>Historial Estudiante</h2>
-
     </a>
 
   </div>
 
 </body>
-
 </html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Deudas</title>
+  <style>
+    body { font-family: Arial; background: #f3f4f6; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th, td { padding: 10px; border-bottom: 1px solid #ddd; }
+    th { background: #1E3A8A; color: white; }
+    a, button {
+      padding: 6px 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+    .btn { background: #1E3A8A; color: white; }
+    .btn-danger { background: #DC2626; color: white; }
+    .btn-edit { background: #16A34A; color: white; }
+  </style>
+</head>
+<body>
+
+<h1>Deudas</h1>
+
+<a href="/deudas/nueva" class="btn">+ Nueva Deuda</a>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Estudiante</th>
+      <th>Monto</th>
+      <th>Estado</th>
+      <th>Vencimiento</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% deudas.forEach(d => { %>
+      <tr>
+        <td><%= d.id %></td>
+        <td><%= d.nombre %></td>
+        <td>$<%= d.monto %></td>
+        <td><%= d.estado %></td>
+        <td><%= d.fecha_vencimiento %></td>
+        <td>
+          <a href="/deudas/editar/<%= d.id %>" class="btn-edit">Editar</a>
+
+          <form action="/deudas/eliminar/<%= d.id %>" method="POST" style="display:inline;">
+            <button class="btn-danger">Eliminar</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+</body>
+</html>
