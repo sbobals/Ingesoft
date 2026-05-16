@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Deuda</title>
+</head>
+<body>
+
+<h1>Editar Deuda</h1>
+
+<form action="/deudas/editar/<%= deuda.id %>" method="POST">
+  
+  <label>Monto:</label>
+  <input type="number" name="monto" value="<%= deuda.monto %>"><br><br>
+
+  <label>Estado:</label>
+  <select name="estado">
+    <option value="pendiente" <%= deuda.estado === 'pendiente' ? 'selected' : '' %>>Pendiente</option>
+    <option value="pagado" <%= deuda.estado === 'pagado' ? 'selected' : '' %>>Pagado</option>
+  </select><br><br>
+
+  <label>Fecha vencimiento:</label>
+  <input type="date" name="fecha_vencimiento" value="<%= deuda.fecha_vencimiento %>"><br><br>
+
+  <button type="submit">Actualizar</button>
+
+</form>
+
+</body>
+</html>

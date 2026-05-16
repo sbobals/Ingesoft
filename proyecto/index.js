@@ -4,6 +4,7 @@ const pool = require('./db');
 const app = express();
 const port = 3000;
 
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
@@ -41,29 +42,128 @@ app.get('/estudiantes', async (req, res) => {
 /* =========================
    VER DEUDAS
 ========================= */
+
+// Mostrar vista
 app.get('/deudas', async (req, res) => {
-
   try {
-
     const result = await pool.query(`
-      SELECT
-        deudas.id,
-        estudiantes.nombre,
-        deudas.monto,
-        deudas.estado,
-        deudas.fecha_vencimiento
+      SELECT deudas.*, estudiantes.nombre
       FROM deudas
-      JOIN estudiantes
-      ON deudas.estudiante_id = estudiantes.id
+      JOIN estudiantes ON deudas.estudiante_id = estudiantes.id
+      ORDER BY deudas.id DESC
     `);
 
-    res.json(result.rows);
+    res.render('deudas', { deudas: result.rows });
 
   } catch (err) {
-
     console.error(err);
+    res.status(500).send('Error al cargar deudas');
+  }
+});
 
-    res.status(500).send('Error obteniendo deudas');
+// Formulario crear
+app.get('/deudas/nueva', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM estudiantes');
+
+    res.render('crear_deuda', {
+      estudiantes: result.rows
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error cargando estudiantes');
+  }
+});
+
+// Crear
+app.post('/deudas', async (req, res) => {
+  try {
+    console.log("BODY:", req.body);
+
+    const estudiante_id = Number(req.body.estudiante_id);
+    const monto = Number(req.body.monto);
+    const { estado, fecha_vencimiento } = req.body;
+
+    // validacion
+    if (!estudiante_id || !monto) {
+      return res.status(400).send("Datos inválidos");
+    }
+
+    await pool.query(`
+      INSERT INTO deudas (estudiante_id, monto, estado, fecha_vencimiento)
+      VALUES ($1, $2, $3, $4)
+    `, [estudiante_id, monto, estado, fecha_vencimiento]);
+
+    res.redirect('/deudas');
+
+  } catch (err) {
+    console.error("ERROR CREAR:", err.message);
+    res.status(500).send(err.message); // muestra error
+  }
+});
+
+//Editar deuda
+// Mostrar formulario editar
+app.get('/deudas/editar/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(`
+      SELECT * FROM deudas WHERE id = $1
+    `, [id]);
+
+    res.render('editar_deuda', {
+      deuda: result.rows[0]
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al cargar deuda');
+  }
+});
+
+// Guardar cambios
+app.post('/deudas/editar/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { monto, estado, fecha_vencimiento } = req.body;
+
+    await pool.query(`
+      UPDATE deudas
+      SET monto = $1,
+          estado = $2,
+          fecha_vencimiento = $3
+      WHERE id = $4
+    `, [monto, estado, fecha_vencimiento, id]);
+
+    res.redirect('/deudas'); 
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al actualizar deuda');
+  }
+});
+
+app.post('/deudas/eliminar/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // borra dependencias
+    await pool.query(`
+      DELETE FROM detalle_pagos WHERE deuda_id = $1
+    `, [id]);
+
+    // borra la deuda
+    await pool.query(`
+      DELETE FROM deudas WHERE id = $1
+    `, [id]);
+
+    res.redirect('/deudas');
+
+  } catch (err) {
+    console.error("ERROR ELIMINAR:", err);
+    res.status(500).send('Error al eliminar deuda');
   }
 });
 
