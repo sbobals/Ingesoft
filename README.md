@@ -11,6 +11,9 @@ Ayudante:
 Un enlace a la Wiki con la cual se va a trabajar.
 https://gitlab.inf.utfsm.cl/inf236-2026-1/inf236-sj-01/-/wikis/home
 
+Enlace para video prototipo
+https://drive.google.com/file/d/1WbeJA6GpBD99KQPPzpzIuFD-UV6dS730/view?usp=sharing
+
 ## Cómo levantar el proyecto
 
 ### Requisitos
