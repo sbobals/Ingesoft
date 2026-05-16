@@ -3,59 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <title>Deudas</title>
+
   <style>
-    body { font-family: Arial; background: #f3f4f6; padding: 20px; }
-    table { width: 100%; border-collapse: collapse; background: white; }
-    th, td { padding: 10px; border-bottom: 1px solid #ddd; }
-    th { background: #1E3A8A; color: white; }
+    body {
+      font-family: Arial;
+      background: #f3f4f6;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1E3A8A;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: center;
+    }
+
+    th {
+      background: #1E3A8A;
+      color: white;
+    }
+
+    tr:hover {
+      background: #f9fafb;
+    }
+
     a, button {
       padding: 6px 10px;
       border-radius: 6px;
       text-decoration: none;
       border: none;
       cursor: pointer;
+      font-size: 13px;
     }
-    .btn { background: #1E3A8A; color: white; }
-    .btn-danger { background: #DC2626; color: white; }
-    .btn-edit { background: #16A34A; color: white; }
+
+    .btn {
+      background: #1E3A8A;
+      color: white;
+    }
+
+    .btn-danger {
+      background: #DC2626;
+      color: white;
+    }
+
+    .btn-edit {
+      background: #16A34A;
+      color: white;
+    }
+
+    form {
+      display: inline;
+    }
   </style>
 </head>
+
 <body>
 
-<h1>Deudas</h1>
+<div class="container">
 
-<a href="/deudas/nueva" class="btn">+ Nueva Deuda</a>
+  <h1>Deudas</h1>
 
-<table>
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Estudiante</th>
-      <th>Monto</th>
-      <th>Estado</th>
-      <th>Vencimiento</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% deudas.forEach(d => { %>
+  <div class="top-bar">
+    <div></div>
+    <a href="/deudas/nueva" class="btn">+ Nueva Deuda</a>
+  </div>
+
+  <table>
+    <thead>
       <tr>
-        <td><%= d.id %></td>
-        <td><%= d.nombre %></td>
-        <td>$<%= d.monto %></td>
-        <td><%= d.estado %></td>
-        <td><%= d.fecha_vencimiento %></td>
-        <td>
-          <a href="/deudas/editar/<%= d.id %>" class="btn-edit">Editar</a>
-
-          <form action="/deudas/eliminar/<%= d.id %>" method="POST" style="display:inline;">
-            <button class="btn-danger">Eliminar</button>
-          </form>
-        </td>
+        <th>ID</th>
+        <th>Estudiante</th>
+        <th>Monto</th>
+        <th>Estado</th>
+        <th>Vencimiento</th>
+        <th>Acciones</th>
       </tr>
-    <% }) %>
-  </tbody>
-</table>
+    </thead>
+
+    <tbody>
+      <% deudas.forEach(d => { %>
+        <tr>
+          <td><%= d.id %></td>
+          <td><%= d.nombre %></td>
+          <td>$<%= Number(d.monto).toLocaleString('es-CL') %></td>
+          <td><%= d.estado %></td>
+          <td>
+            <%= d.fecha_vencimiento 
+              ? new Date(d.fecha_vencimiento).toLocaleDateString('es-CL') 
+              : '-' %>
+          </td>
+          <td>
+            <a href="/deudas/editar/<%= d.id %>" class="btn-edit">Editar</a>
+
+            <form action="/deudas/eliminar/<%= d.id %>" method="POST">
+              <button class="btn-danger">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+
+  </table>
+
+</div>
 
 </body>
 </html>
