@@ -1,0 +1,318 @@
+/* ============================================================
+   UTFSM — Portal de Gestión Financiera
+   style2.css — Hoja de estilos compartida para los 3 paneles
+   ============================================================ */
+
+/* ---- RESET ---- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ---- TOKENS ---- */
+:root {
+    --utfsm-azul:       #003366;
+    --utfsm-rojo:       #C8102E;
+    --bg:               #F0F4F8;
+    --card-bg:          #FFFFFF;
+    --border:           #DDE3EC;
+    --text-primary:     #1A2535;
+    --text-secondary:   #5A6A7E;
+    --text-muted:       #8A9AB0;
+
+    /* Colores por rol */
+    --color-admin:      #C8102E;
+    --color-admin-soft: #FEF0EE;
+    --color-exec:       #003366;
+    --color-exec-soft:  #EEF4FE;
+    --color-student:    #1B6B3A;
+    --color-student-soft: #EDFAF3;
+}
+
+/* ---- BASE ---- */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.logo-placeholder {
+    display: inline-flex;  
+    align-items: center;  
+    gap: 10px;            
+}
+.logo-placeholder img{
+    height: 40px;      
+    width: auto;      
+    display: block; 
+}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+.topbar-institucional {
+    background: var(--utfsm-azul);
+    border-bottom: 4px solid var(--utfsm-rojo);
+}
+
+.topbar-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo-placeholder {
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.topbar-right a {
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.15s;
+}
+
+.topbar-right a:hover { color: #fff; }
+
+/* ============================================================
+   CONTENEDOR PRINCIPAL
+   ============================================================ */
+.main-container {
+    max-width: 1100px;
+    margin: 36px auto;
+    padding: 0 24px;
+    flex: 1;
+    width: 100%;
+}
+
+/* ============================================================
+   CABECERA DEL PANEL (rol + bienvenida)
+   ============================================================ */
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.role-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    /* El color de fondo se sobreescribe por rol: */
+    background: var(--utfsm-azul);
+}
+
+.role-icon.admin   { background: var(--color-admin); }
+.role-icon.exec    { background: var(--color-exec); }
+.role-icon.student { background: var(--color-student); }
+
+.panel-header-text h2,
+h2.bienvenida {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.panel-header-text p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 2px;
+}
+
+/* Etiqueta de rol */
+.role-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+    background: var(--color-exec-soft);
+    color: var(--color-exec);
+}
+
+.role-tag.admin   { background: var(--color-admin-soft);   color: var(--color-admin); }
+.role-tag.exec    { background: var(--color-exec-soft);    color: var(--color-exec); }
+.role-tag.student { background: var(--color-student-soft); color: var(--color-student); }
+
+/* ============================================================
+   TARJETA DE ESTADO (estudiante)
+   ============================================================ */
+.estado-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 28px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.estado-info h3 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.estado-info .estado-rut {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.estado-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: var(--color-student-soft);
+    color: var(--color-student);
+}
+
+.estado-badge.alerta {
+    background: #FEF9E7;
+    color: #9A7D0A;
+}
+
+/* ============================================================
+   GRID DE TARJETAS
+   ============================================================ */
+.menu-horizontal {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.menu-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.menu-item:hover {
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+    transform: translateY(-2px);
+}
+
+.menu-item-icon {
+    font-size: 26px;
+    margin-bottom: 2px;
+}
+
+/* ============================================================
+   ENLACES Y DESCRIPCIÓN DE TARJETA
+   ============================================================ */
+.btn-portal {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--utfsm-azul);
+    text-decoration: none;
+    display: block;
+    transition: color 0.15s;
+}
+
+.btn-portal:hover { color: var(--utfsm-rojo); }
+
+.desc-portal {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    flex: 1;
+}
+
+/* Flecha / CTA al pie de la tarjeta */
+.item-arrow {
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 4px;
+    color: var(--utfsm-azul);
+}
+
+.item-arrow.admin   { color: var(--color-admin); }
+.item-arrow.exec    { color: var(--color-exec); }
+.item-arrow.student { color: var(--color-student); }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer-portal {
+    max-width: 1100px;
+    margin: 40px auto 24px;
+    padding: 0 24px;
+    text-align: center;
+    width: 100%;
+}
+
+.footer-portal hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin-bottom: 16px;
+}
+
+.footer-portal p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.footer-portal a {
+    color: var(--utfsm-azul);
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.footer-portal a:hover { text-decoration: underline; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 860px) {
+    .menu-horizontal { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+    .menu-horizontal   { grid-template-columns: 1fr; }
+    .topbar-content    { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .panel-header      { flex-direction: column; align-items: flex-start; }
+    .estado-card       { flex-direction: column; align-items: flex-start; }
+}
