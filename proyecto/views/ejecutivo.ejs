@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Ejecutivo — UTFSM</title>
+    <link rel="stylesheet" href="/CSS/paneles.css">
+    <style>
+       
+
+        .role-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            background: #003366;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="topbar-institucional">
+        <div class="topbar-content">
+            <span class="logo-placeholder"><img src="/logo.png" alt="Logo USM"> UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA</span>
+            <div class="topbar-right">
+                <a href="/logout">🔒 Salir</a> &nbsp;|&nbsp; <a href="#" target="_blank">❓ Ayuda</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+
+        <div class="panel-header">
+            <div class="role-icon">📈</div>
+            <div class="panel-header-text">
+                <div class="role-tag">● Ejecutivo</div>
+                <h2>Bienvenido/a, <%= usuario.nombre %></h2>
+                <p>Panel ejecutivo — consulta y seguimiento financiero.</p>
+            </div>
+        </div>
+
+        <div class="menu-horizontal">
+
+            <div class="menu-item">
+                <div class="menu-item-icon">📊</div>
+                <a href="/resumen" class="btn-portal">Resúmenes Financieros</a>
+                <p class="desc-portal">Revisa balances y estados generales del período en curso.</p>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-item-icon">🎁</div>
+                <a href="/beneficios" class="btn-portal">Beneficios</a>
+                <p class="desc-portal">Consulta la asignación de becas y convenios vigentes.</p>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-item-icon">🗂️</div>
+                <a href="/historial/1" class="btn-portal">Historial Financiero</a>
+                <p class="desc-portal">Revisa auditorías y el registro histórico de movimientos.</p>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-item-icon">🔒</div>
+                <a href="/logout" class="btn-portal">Cerrar Sesión</a>
+                <p class="desc-portal">Finaliza tu sesión actual de forma segura.</p>
+                <span class="item-arrow">Salir →</span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer-portal">
+        <hr>
+        <p>© Universidad Técnica Federico Santa María</p>
+    </div>
+
+</body>
+</html>

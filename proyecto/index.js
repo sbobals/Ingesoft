@@ -1,23 +1,137 @@
 const express = require('express');
+const session = require('express-session');
 const pool = require('./db');
 
 const app = express();
 const port = 3000;
 
+const PDFDocument = require('pdfkit');
+const verificarLogin = require('./middleware/auth');
+const verificarRol = require('./middleware/roles');
+
+/* =========================
+   CONFIGURACIÓN
+========================= */
+
+app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(session({
+  secret: 'proyecto-inf236',
+  resave: false,
+  saveUninitialized: false
+}));
+
 app.use(express.static('public'));
-app.set('view engine', 'ejs');
-const PDFDocument = require('pdfkit');
+app.use((req, res, next) => {
+
+  res.locals.usuario = req.session.usuario;
+
+  next();
+
+});
 /* =========================
-   RUTA PRINCIPAL
+   RUTA PRINCIPAL (Login)
 ========================= */
 app.get('/', (req, res) => {
 
-  res.sendFile(__dirname + '/views/home.html');
+  if (!req.session.usuario) {
+    return res.redirect('/login');
+  }
+
+  if (req.session.usuario.rol === 'admin') {
+    return res.redirect('/admin');
+  }
+
+  if (req.session.usuario.rol === 'ejecutivo') {
+    return res.redirect('/ejecutivo');
+  }
+
+  if (req.session.usuario.rol === 'estudiante') {
+    return res.redirect('/estudiante');
+  }
+
+  res.redirect('/login');
 
 });
 
+app.get('/login', (req, res) => {
+
+  if (req.session.usuario) {
+    return res.redirect('/');
+  }
+
+  res.render('login');
+
+});
+
+app.post('/login', async (req, res) => {
+
+  try {
+    const { email, password } = req.body;
+
+    const result = await pool.query(`
+      SELECT *
+      FROM usuarios
+      WHERE email = $1
+      AND password = $2
+    `, [email, password]);
+
+    if (result.rows.length === 0) {
+      return res.send('Usuario o contraseña incorrecta');
+    }
+
+    const usuario = result.rows[0];
+
+    req.session.usuario = usuario;
+
+    if (usuario.rol === 'admin') {
+      return res.redirect('/admin');
+    }
+
+    if (usuario.rol === 'ejecutivo') {
+      return res.redirect('/ejecutivo');
+    }
+
+    if (usuario.rol === 'estudiante') {
+      return res.redirect('/estudiante');
+    }
+
+  } catch (err) {
+
+    console.error(err);
+    res.status(500).send('Error en login');
+  }
+});
+app.get('/logout', (req, res) => {
+
+  req.session.destroy(() => {
+    res.redirect('/login');
+  });
+
+  
+});
+
+app.get('/admin',
+  verificarRol('admin'),
+  (req,res)=>{
+    res.render('admin');
+  }
+);
+
+app.get('/ejecutivo',
+  verificarRol('ejecutivo'),
+  (req,res)=>{
+    res.render('ejecutivo');
+  }
+);
+
+app.get('/estudiante',
+  verificarRol('estudiante'),
+  (req,res)=>{
+    res.render('estudiante');
+  }
+);
 /* =========================
    VER ESTUDIANTES
 ========================= */

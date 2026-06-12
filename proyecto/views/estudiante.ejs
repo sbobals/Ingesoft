@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Estudiante — UTFSM</title>
+    <link rel="stylesheet" href="/CSS/paneles.css">
+    <style>
+        .role-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            background: #1B6B3A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="topbar-institucional">
+        <div class="topbar-content">
+            <span class="logo-placeholder"><img src="/logo.png" alt="Logo USM"> UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA</span>
+            <div class="topbar-right">
+                <a href="/logout">🔒 Salir</a> &nbsp;|&nbsp; <a href="#">❓ Ayuda</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+
+        <div class="panel-header">
+            <div class="role-icon">🎓</div>
+            <div class="panel-header-text">
+                <div class="role-tag">● Estudiante</div>
+                <h2>Bienvenido/a, <%= usuario.nombre %></h2>
+                <p>Portal de autoservicio estudiantil — información financiera personal.</p>
+            </div>
+        </div>
+
+        <div class="estado-card">
+            <div class="estado-info">
+                <h3>Estado de cuenta</h3>
+                <div class="estado-rut">RUT: <%= usuario.rut %></div>
+            </div>
+            <div class="estado-badge">✓ Sin deudas vencidas</div>
+        </div>
+
+        <div class="menu-horizontal">
+
+            <div class="menu-item">
+                <div class="menu-item-icon">💳</div>
+                <a href="/mi-resumen" class="btn-portal">Mi Resumen Financiero</a>
+                <p class="desc-portal">Revisa tus deudas, cargos y saldos actuales.</p>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-item-icon">🎁</div>
+                <a href="/mis-beneficios" class="btn-portal">Mis Beneficios</a>
+                <p class="desc-portal">Consulta el estado de tus becas, créditos y asignaciones.</p>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-item-icon">🗂️</div>
+                <a href="/historia/1" class="btn-portal">Mi Historial Financiero</a>
+                <p class="desc-portal">Revisa el registro histórico de tus pagos y matrículas.</p>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-item-icon">📢</div>
+                <a href="/beneficios" class="btn-portal">Beneficios Disponibles</a>
+                <p class="desc-portal">Infórmate sobre convocatorias, becas y apoyos vigentes.</p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer-portal">
+        <hr>
+        <p>© Universidad Técnica Federico Santa María</p>
+    </div>
+
+</body>
+</html>

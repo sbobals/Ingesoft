@@ -10,6 +10,13 @@ VALUES
 ('Juan Pérez'),
 ('María Soto'),
 ('Carlos Díaz');
+INSERT INTO usuarios (nombre, email, password, rol, estudiante_id)
+VALUES
+('Administrador', 'admin@usm.cl', '1234', 'admin', NULL),
+('Ejecutivo Financiero', 'ejecutivo@usm.cl', '1234', 'ejecutivo', NULL),
+('Juan Pérez', 'juan@usm.cl', '1234', 'estudiante', 1),
+('María Soto', 'maria@usm.cl', '1234', 'estudiante', 2), 
+('Carlos Díaz', 'carlos@usm.cl', '1234', 'estudiante', 3); 
 
 INSERT INTO aranceles
 (estudiante_id, monto_total, periodo)
