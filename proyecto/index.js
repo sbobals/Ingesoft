@@ -747,48 +747,35 @@ app.get('/reporte-global', async (req, res) => {
 /* =========================
    HISTORIAL FINANCIERO
 ========================= */
-app.get('/historial/1', async (req, res) => {
+app.get('/historial/:id', async (req, res) => {
 
-  try {
+	try {
 
-    const estudianteId = req.params.id;
+		const estudianteId = req.params.id;
 
-    const estudiante = await pool.query(`
-      SELECT * FROM estudiantes
-      WHERE id = $1
-    `, [estudianteId]);
+		const estudiante = await pool.query(`
+			SELECT 
+			    detalle_historico.id, cobertura AS monto_beneficio, deudas.monto AS monto_deuda, pagos.monto AS monto_pago
+			FROM 
+			    detalle_historico
+			INNER JOIN beneficios ON beneficios.estudiante_id = detalle_historico.id
+			INNER JOIN deudas ON deudas.estudiante_id = detalle_historico.id
+			INNER JOIN pagos ON pagos.estudiante_id = detalle_historico.id
+			WHERE detalle_historico.id = $1;
+		`, [estudianteId]);
 
-    const deudas = await pool.query(`
-      SELECT * FROM deudas
-      WHERE estudiante_id = $1
-    `, [estudianteId]);
+		res.render('historial', {
+			estudiantes: estudiante.rows
+		});
 
-    const pagos = await pool.query(`
-      SELECT * FROM pagos
-      WHERE estudiante_id = $1
-    `, [estudianteId]);
+		//res.render('historial');
 
-    const beneficios = await pool.query(`
-      SELECT * FROM beneficios
-      WHERE estudiante_id = $1
-    `, [estudianteId]);
+	} catch (err) {
 
-	/*Hola*/
-	res.render('historial')
-/*
-    res.json({
-      estudiante: estudiante.rows[0],
-      deudas: deudas.rows,
-      pagos: pagos.rows,
-      beneficios: beneficios.rows
-    });
-*/
-  } catch (err) {
+		console.error(err);
 
-    console.error(err);
-
-    res.status(500).send('Error obteniendo historial');
-  }
+		res.status(500).send('Error obteniendo historial');
+	}
 });
 
 /* =========================

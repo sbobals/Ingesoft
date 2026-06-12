@@ -49,11 +49,4 @@ CREATE TABLE detalle_historico (
     PRIMARY KEY (id, ano, semestre)
 );
 
-INSERT INTO detalle_historico (id, ano, semestre)
-VALUES
-(1, 2025, 1),
-(2, 2025, 1),
-(3, 2025, 1),
-(1, 2026, 1),
-(2, 2026, 1),
-(3, 2026, 1);
+
