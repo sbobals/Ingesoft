@@ -33,11 +33,13 @@
 	<div class="content">
 	
 		<!-- FILTRO -->
-		<form method="GET" action="/historial" class="filter-bar">
+		<form method="GET" action="/historial/<%= estudianteId %>" class="filter-bar">
 			<label>Periodo: </label>
 			<input type="number" id="year" name="year" min="1900" max="2099" step="1" value="2024">
+
 			<label>Semestre: </label>
 			<input type="number" id="semester" name="semester" min="1" max="2" step="1" value="1">
+
 			<button type="submit" class="btn-filter">Filtrar</button>
 		</form>
 
@@ -46,16 +48,25 @@
 			<table>
 				<thead>
 					<tr>
-					<th>Semestre</th>
-					<th class="text-right">Deuda</th>
-					<th class="text-right">Pagos</th>
-					<th class="text-right">Beneficios</th>
+						<th>Semestre</th>
+						<th class="text-right">Deuda</th>
+						<th class="text-right">Pagos</th>
+						<th class="text-right">Beneficios</th>
 					</tr>
 				</thead>
 				<tbody>
+					<% if (estudiantes.length === 0) { %>
+					<tr>
+						<td colspan="4" style="text-align: center; padding: 20px; color: #6b7280; font-style: italic;">
+							No se ha encontrado ningún historial para el período seleccionado.
+						</td>
+					</tr>
+					<% } else { %>
 					<% estudiantes.forEach(estudiante => { %>
-						<%InsertSemester(estudiante.id, estudiante.monto_deuda, estudiante.monto_pago, estudiante.monto_beneficio)%>
-					<% }); %>
+						<% const semestreFormateado = `${estudiante.ano}-${estudiante.semestre}`; %>
+						<%- InsertSemester(semestreFormateado, estudiante.monto_deuda, estudiante.monto_pago, estudiante.monto_beneficio) %>
+						<% }); %>
+					<% } %>
 				</tbody>
 			</table>      
 		</div>
