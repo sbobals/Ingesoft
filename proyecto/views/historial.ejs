@@ -1,74 +1,76 @@
 <!DOCTYPE html>
 <html lang="es">
+
+<% function InsertSemester(Semester, Deuda, Pagos, Beneficios){ %>
+      <tr>
+	      <td><%= Semester%></td>
+	      <td class="text-right monto-deuda"> $<%= Deuda%></td>
+	      <td class="text-right monto-pagos"> $<%= Pagos%></td>
+	      <td class="text-right monto-beneficios"> $<%= Beneficios%></td>
+      </tr> 
+<% } %>
+
+
+
 <head>
-<meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Historial Estudiante</title>
-  <link rel="stylesheet" href="/CSS/historial.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/CSS/historial.css">
+	
+	<title>Historial Estudiante</title>
 </head>
 
 <body>
+	 <!-- TOPBAR -->
+	<div class="topbar">
+		<div>
+			<div class="topbar-title">Historial Financiero Personal</div>
+			<div class="topbar-sub">Sistema Financiero Estudiantil</div>
+		</div>
+		<a href="/" class="btn-back">&#8592; Volver al inicio</a>
+	</div>
 
- <!-- TOPBAR -->
-  <div class="topbar">
-    <div>
-      <div class="topbar-title">Historial Financiero Personal</div>
-      <div class="topbar-sub">Sistema Financiero Estudiantil</div>
-    </div>
-    <a href="/" class="btn-back">&#8592; Volver al inicio</a>
-  </div>
+	<div class="content">
+	
+		<!-- FILTRO -->
+		<form method="GET" action="/historial/<%= estudianteId %>" class="filter-bar">
+			<label>Periodo: </label>
+			<input type="number" id="year" name="year" min="1900" max="2099" step="1" value="2024">
+
+			<label>Semestre: </label>
+			<input type="number" id="semester" name="semester" min="1" max="2" step="1" value="1">
+
+			<button type="submit" class="btn-filter">Filtrar</button>
+		</form>
 
 
-<div class="content">  
-  <!-- FILTRO -->
-    <form method="GET" action="/historial" class="filter-bar">
-      <label>Periodo: </label>
-      <input type="number" id="year" name="year" min="1900" max="2099" step="1" value="2024">
-      <label>Semestre: </label>
-      <input type="number" id="semester" name="semester" min="1" max="2" step="1" value="1">
-      <button type="submit" class="btn-filter">Filtrar</button>
-    </form>
-    
-    <div class="filter-bar">
-      <%
-        function InsertSemester(Semester, Deuda, Pagos, Beneficios){
-          %>
-          <tr>
-            <td><%= Semester%></td>
-              <td class="text-right monto-deuda"> $<%= Deuda%></td>
-              <td class="text-right monto-pagos"> $<%= Pagos%></td>
-              <td class="text-right monto-beneficios"> $<%= Beneficios%></td>
-            </tr> 
-          <%
-        }
-      %>
-      
-      <table>
-  <thead>
-    <tr>
-      <th>Semestre</th>
-      <th class="text-right">Deuda</th>
-      <th class="text-right">Pagos</th>
-      <th class="text-right">Beneficios</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>2025-1</td>
-      <td class="text-right monto-deuda">$150.000</td>
-      <td class="text-right monto-pagos">$150.000</td>
-      <td class="text-right monto-beneficios">$30.000</td>
-    </tr>
-    <%InsertSemester("2024.2", "100.000", "150.000", "300.000")%>
-    <%InsertSemester("2023.1", "100.000", "150.000", "300.000")%>
-    <%InsertSemester("2022.2", "100.000", "150.000", "300.000")%>
-  </tbody>
-  
-</table>
-      
-    </div>
-</div>
-
+		<div class="filter-bar">
+			<table>
+				<thead>
+					<tr>
+						<th>Semestre</th>
+						<th class="text-right">Deuda</th>
+						<th class="text-right">Pagos</th>
+						<th class="text-right">Beneficios</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% if (estudiantes.length === 0) { %>
+					<tr>
+						<td colspan="4" style="text-align: center; padding: 20px; color: #6b7280; font-style: italic;">
+							No se ha encontrado ningún historial para el período seleccionado.
+						</td>
+					</tr>
+					<% } else { %>
+					<% estudiantes.forEach(estudiante => { %>
+						<% const semestreFormateado = `${estudiante.ano}-${estudiante.semestre}`; %>
+						<%- InsertSemester(semestreFormateado, estudiante.monto_deuda, estudiante.monto_pago, estudiante.monto_beneficio) %>
+						<% }); %>
+					<% } %>
+				</tbody>
+			</table>      
+		</div>
+	</div>
 </body>
 
 </html>
