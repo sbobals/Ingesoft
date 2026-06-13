@@ -65,6 +65,25 @@ app.get('/login', (req, res) => {
 
 });
 
+app.get('/panel', verificarLogin, (req, res) => {
+
+  const rol = req.session.usuario.rol;
+
+  if (rol === 'admin') {
+    return res.redirect('/admin');
+  }
+
+  if (rol === 'ejecutivo') {
+    return res.redirect('/ejecutivo');
+  }
+
+  if (rol === 'estudiante') {
+    return res.redirect('/estudiante');
+  }
+
+  return res.redirect('/login');
+});
+
 app.post('/login', async (req, res) => {
 
   try {
@@ -86,23 +105,13 @@ app.post('/login', async (req, res) => {
     req.session.usuario = {
       id: usuario.id,
       nombre: usuario.nombre,
-      rol: usuario.rol
+      rol: usuario.rol,
+      estudiante_id: usuario.estudiante_id
     };
 
-    if (usuario.rol === 'admin') {
-      return res.redirect('/admin');
-    }
-
-    if (usuario.rol === 'ejecutivo') {
-      return res.redirect('/ejecutivo');
-    }
-
-    if (usuario.rol === 'estudiante') {
-      return res.redirect('/estudiante');
-    }
+    return res.redirect('/panel');
 
   } catch (err) {
-
     console.error(err);
     res.status(500).send('Error en login');
   }
@@ -134,6 +143,7 @@ app.get('/ejecutivo',
 
 app.get(
   '/estudiante',
+  verificarLogin,
   verificarRol('estudiante'),
   async (req, res) => {
 
