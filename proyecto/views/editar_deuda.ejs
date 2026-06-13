@@ -4,26 +4,17 @@
   <meta charset="UTF-8">
   <title>Editar Deuda</title>
 
-  <style>
-    body {
-      font-family: Arial;
-      background: #f3f4f6;
-      padding: 20px;
-    }
+  <!-- MISMO CSS DEL SISTEMA -->
+  <link rel="stylesheet" href="/CSS/paneles.css">
 
-    .container {
+  <style>
+    .form-container {
       max-width: 500px;
-      margin: auto;
+      margin: 0 auto;
       background: white;
       padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #1E3A8A;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
 
     label {
@@ -40,7 +31,7 @@
       border: 1px solid #ccc;
     }
 
-    button {
+    .btn-submit {
       margin-top: 20px;
       width: 100%;
       padding: 12px;
@@ -52,54 +43,80 @@
       cursor: pointer;
     }
 
-    button:hover {
+    .btn-submit:hover {
       background: #15803d;
-    }
-
-    .back {
-      display: block;
-      margin-top: 15px;
-      text-align: center;
-      text-decoration: none;
-      color: #6B7280;
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- 🔵 TOPBAR -->
+<div class="topbar-institucional">
+  <div class="topbar-content">
+    <span class="logo-placeholder">
+      <img src="/logo.png" alt="Logo USM"> 
+      UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
+    </span>
 
-  <h1>Editar Deuda</h1>
+    <div class="topbar-right">
+      <a href="/deudas">⬅ Volver</a> |
+      <a href="/logout">🔒 Salir</a> |
+      <a href="#">❓ Ayuda</a>
+    </div>
+  </div>
+</div>
 
-  <form action="/deudas/editar/<%= deuda.id %>" method="POST">
+<!-- CONTENIDO -->
+<div class="main-container">
 
-    <label>Monto</label>
-    <input type="number" name="monto" value="<%= deuda.monto %>" required>
+  <!-- HEADER -->
+  <div class="panel-header">
+    <div class="role-icon">✏️</div>
+    <div class="panel-header-text">
+      <div class="role-tag">● Administrador</div>
+      <h2>Editar Deuda</h2>
+      <p>Modifica los datos de la deuda seleccionada.</p>
+    </div>
+  </div>
 
-    <label>Estado</label>
-    <select name="estado">
-      <option value="pendiente" <%= deuda.estado === 'pendiente' ? 'selected' : '' %>>
-        Pendiente
-      </option>
-      <option value="pagado" <%= deuda.estado === 'pagado' ? 'selected' : '' %>>
-        Pagado
-      </option>
-    </select>
+  <!-- FORM -->
+  <div class="form-container">
 
-    <label>Fecha vencimiento</label>
-    <input 
-      type="date" 
-      name="fecha_vencimiento"
-      value="<%= deuda.fecha_vencimiento ? new Date(deuda.fecha_vencimiento).toISOString().split('T')[0] : '' %>"
-    >
+    <form action="/deudas/editar/<%= deuda.id %>" method="POST">
 
-    <button type="submit">Actualizar</button>
+      <label>Monto</label>
+      <input type="number" name="monto" value="<%= deuda.monto %>" required>
 
-  </form>
+      <label>Estado</label>
+      <select name="estado">
+        <option value="pendiente" <%= deuda.estado === 'pendiente' ? 'selected' : '' %>>
+          Pendiente
+        </option>
+        <option value="pagado" <%= deuda.estado === 'pagado' ? 'selected' : '' %>>
+          Pagado
+        </option>
+      </select>
 
-  <a href="/deudas" class="back">← Volver</a>
+      <label>Fecha vencimiento</label>
+      <input 
+        type="date" 
+        name="fecha_vencimiento"
+        value="<%= deuda.fecha_vencimiento ? new Date(deuda.fecha_vencimiento).toISOString().split('T')[0] : '' %>"
+      >
 
+      <button type="submit" class="btn-submit">Actualizar</button>
+
+    </form>
+
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer-portal">
+  <hr>
+  <p>© Universidad Técnica Federico Santa María</p>
 </div>
 
 </body>
