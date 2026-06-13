@@ -83,7 +83,11 @@ app.post('/login', async (req, res) => {
 
     const usuario = result.rows[0];
 
-    req.session.usuario = usuario;
+    req.session.usuario = {
+      id: usuario.id,
+      nombre: usuario.nombre,
+      rol: usuario.rol
+    };
 
     if (usuario.rol === 'admin') {
       return res.redirect('/admin');
@@ -113,6 +117,7 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/admin',
+  verificarLogin,
   verificarRol('admin'),
   (req,res)=>{
     res.render('admin');
@@ -120,6 +125,7 @@ app.get('/admin',
 );
 
 app.get('/ejecutivo',
+  verificarLogin,
   verificarRol('ejecutivo'),
   (req,res)=>{
     res.render('ejecutivo');
@@ -127,6 +133,7 @@ app.get('/ejecutivo',
 );
 
 app.get('/estudiante',
+  verificarLogin,
   verificarRol('estudiante'),
   (req,res)=>{
     res.render('estudiante');
@@ -158,7 +165,7 @@ app.get('/estudiantes', async (req, res) => {
 ========================= */
 
 // Mostrar vista
-app.get('/deudas', async (req, res) => {
+app.get('/deudas', verificarLogin, verificarRol('admin', 'ejecutivo'), async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT deudas.*, estudiantes.nombre
@@ -167,7 +174,9 @@ app.get('/deudas', async (req, res) => {
       ORDER BY deudas.id DESC
     `);
 
-    res.render('deudas', { deudas: result.rows });
+    res.render('deudas', { 
+      deudas: result.rows
+    });
 
   } catch (err) {
     console.error(err);
@@ -176,7 +185,7 @@ app.get('/deudas', async (req, res) => {
 });
 
 // Formulario crear
-app.get('/deudas/nueva', async (req, res) => {
+app.get('/deudas/nueva', verificarLogin, verificarRol('admin', 'ejecutivo'), async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM estudiantes');
 
@@ -191,15 +200,12 @@ app.get('/deudas/nueva', async (req, res) => {
 });
 
 // Crear
-app.post('/deudas', async (req, res) => {
+app.post('/deudas', verificarLogin, verificarRol('admin', 'ejecutivo'), async (req, res) => {
   try {
-    console.log("BODY:", req.body);
-
     const estudiante_id = Number(req.body.estudiante_id);
     const monto = Number(req.body.monto);
     const { estado, fecha_vencimiento } = req.body;
 
-    // validacion
     if (!estudiante_id || !monto) {
       return res.status(400).send("Datos inválidos");
     }
@@ -213,13 +219,12 @@ app.post('/deudas', async (req, res) => {
 
   } catch (err) {
     console.error("ERROR CREAR:", err.message);
-    res.status(500).send(err.message); // muestra error
+    res.status(500).send(err.message);
   }
 });
 
-//Editar deuda
-// Mostrar formulario editar
-app.get('/deudas/editar/:id', async (req, res) => {
+// Mostrar editar
+app.get('/deudas/editar/:id', verificarLogin, verificarRol('admin', 'ejecutivo'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -238,7 +243,7 @@ app.get('/deudas/editar/:id', async (req, res) => {
 });
 
 // Guardar cambios
-app.post('/deudas/editar/:id', async (req, res) => {
+app.post('/deudas/editar/:id', verificarLogin, verificarRol('admin', 'ejecutivo'), async (req, res) => {
   try {
     const { id } = req.params;
     const { monto, estado, fecha_vencimiento } = req.body;
@@ -259,26 +264,23 @@ app.post('/deudas/editar/:id', async (req, res) => {
   }
 });
 
-app.post('/deudas/eliminar/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
+// Eliminar
+app.post('/deudas/eliminar/:id', 
+  verificarLogin, 
+  verificarRol('admin', 'ejecutivo'), 
+  async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    // borra dependencias
-    await pool.query(`
-      DELETE FROM detalle_pagos WHERE deuda_id = $1
-    `, [id]);
+      await pool.query(`DELETE FROM detalle_pagos WHERE deuda_id = $1`, [id]);
+      await pool.query(`DELETE FROM deudas WHERE id = $1`, [id]);
 
-    // borra la deuda
-    await pool.query(`
-      DELETE FROM deudas WHERE id = $1
-    `, [id]);
+      res.redirect('/deudas');
 
-    res.redirect('/deudas');
-
-  } catch (err) {
-    console.error("ERROR ELIMINAR:", err);
-    res.status(500).send('Error al eliminar deuda');
-  }
+    } catch (err) {
+      console.error("ERROR ELIMINAR:", err);
+      res.status(500).send('Error al eliminar deuda');
+    }
 });
 
 /* =========================

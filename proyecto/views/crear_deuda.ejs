@@ -4,26 +4,17 @@
   <meta charset="UTF-8">
   <title>Nueva Deuda</title>
 
-  <style>
-    body {
-      font-family: Arial;
-      background: #f3f4f6;
-      padding: 20px;
-    }
+  <!-- MISMO CSS -->
+  <link rel="stylesheet" href="/CSS/paneles.css">
 
-    .container {
+  <style>
+    .form-container {
       max-width: 500px;
-      margin: auto;
+      margin: 0 auto;
       background: white;
       padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #1E3A8A;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
 
     label {
@@ -40,7 +31,7 @@
       border: 1px solid #ccc;
     }
 
-    button {
+    .btn-submit {
       margin-top: 20px;
       width: 100%;
       padding: 12px;
@@ -52,7 +43,7 @@
       cursor: pointer;
     }
 
-    button:hover {
+    .btn-submit:hover {
       background: #3B5FC0;
     }
 
@@ -68,37 +59,71 @@
 
 <body>
 
-<div class="container">
+<!-- 🔵 TOPBAR -->
+<div class="topbar-institucional">
+  <div class="topbar-content">
+    <span class="logo-placeholder">
+      <img src="/logo.png" alt="Logo USM"> 
+      UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
+    </span>
 
-  <h1>Crear Deuda</h1>
+    <div class="topbar-right">
+      <a href="/deudas">⬅ Volver</a> |
+      <a href="/logout">🔒 Salir</a> |
+      <a href="#">❓ Ayuda</a>
+    </div>
+  </div>
+</div>
 
-  <form action="/deudas" method="POST">
+<!-- CONTENIDO -->
+<div class="main-container">
 
-    <label>Estudiante</label>
-    <select name="estudiante_id" required>
-      <% estudiantes.forEach(e => { %>
-        <option value="<%= e.id %>"><%= e.nombre %></option>
-      <% }) %>
-    </select>
+  <!-- HEADER -->
+  <div class="panel-header">
+    <div class="role-icon">➕</div>
+    <div class="panel-header-text">
+      <div class="role-tag">● Administrador</div>
+      <h2>Nueva Deuda</h2>
+      <p>Registra una nueva deuda en el sistema.</p>
+    </div>
+  </div>
 
-    <label>Monto</label>
-    <input type="number" name="monto" placeholder="Ej: 100000" required>
+  <!-- FORM -->
+  <div class="form-container">
 
-    <label>Estado</label>
-    <select name="estado">
-      <option value="pendiente">Pendiente</option>
-      <option value="pagado">Pagado</option>
-    </select>
+    <form action="/deudas" method="POST">
 
-    <label>Fecha vencimiento</label>
-    <input type="date" name="fecha_vencimiento">
+      <label>Estudiante</label>
+      <select name="estudiante_id" required>
+        <% estudiantes.forEach(e => { %>
+          <option value="<%= e.id %>"><%= e.nombre %></option>
+        <% }) %>
+      </select>
 
-    <button type="submit">Guardar</button>
+      <label>Monto</label>
+      <input type="number" name="monto" placeholder="Ej: 100000" required>
 
-  </form>
+      <label>Estado</label>
+      <select name="estado">
+        <option value="pendiente">Pendiente</option>
+        <option value="pagado">Pagado</option>
+      </select>
 
-  <a href="/deudas" class="back">← Volver</a>
+      <label>Fecha vencimiento</label>
+      <input type="date" name="fecha_vencimiento">
 
+      <button type="submit" class="btn-submit">Guardar</button>
+
+    </form>
+
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer-portal">
+  <hr>
+  <p>© Universidad Técnica Federico Santa María</p>
 </div>
 
 </body>
