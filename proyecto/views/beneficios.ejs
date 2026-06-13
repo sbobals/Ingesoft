@@ -5,14 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simulador de Beneficios</title>
   <style>
-    /* Se mantienen todos tus estilos originales de resumen.ejs */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F1F5F9; color: #111827; min-height: 100vh; }
+    
+    /* ── TOPBAR ── */
     .topbar { background: #1E3A8A; padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; }
     .topbar-title { color: #fff; font-size: 18px; font-weight: 600; }
+    .topbar-sub { color: rgba(255,255,255,0.55); font-size: 13px; margin-top: 2px; }
+    .btn-back { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+    
+    /* ── CONTENT ── */
     .content { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
     
-    /* Métricas dinámicas para la simulación */
+    /* ── SELECTOR DE CARRERA ── */
+    .filter-bar { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+    .filter-bar select { border: 1px solid #E5E7EB; border-radius: 8px; padding: 8px 12px; font-size: 14px; background: #F9FAFB; outline: none; width: 100%; max-width: 400px; cursor: pointer; }
+    
+    /* ── MÉTRICAS ── */
     .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
     .metric-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; padding: 1.25rem; border-top: 3px solid transparent; }
     .metric-card.neutral { border-top-color: #1E3A8A; }
@@ -21,16 +30,15 @@
     .metric-label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: #6B7280; margin-bottom: 8px; }
     .metric-value { font-size: 26px; font-weight: 700; }
 
-    /* Estilo de las tarjetas de beneficios */
+    /* ── CARDS BENEFICIOS ── */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
     .card { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.2s; }
     .card:hover { border-color: #7C3AED; }
     .card-header { padding: 1.25rem; border-bottom: 1px solid #F3F4F6; display: flex; align-items: center; gap: 12px; background: #FAFAFA; }
-    input[type="checkbox"] { width: 20px; height: 20px; accent-color: #7C3AED; }
+    input[type="checkbox"] { width: 20px; height: 20px; accent-color: #7C3AED; cursor: pointer;}
     .card-nombre { font-size: 15px; font-weight: 600; }
     .card-body { padding: 1.25rem; font-size: 13px; }
     .card-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
   </style>
 </head>
 <body>
@@ -38,19 +46,26 @@
   <div class="topbar">
     <div>
       <div class="topbar-title">Simulador de Arancel</div>
-      <div class="topbar-sub">Sistema Financiero Estudiantil</div>
+      <div class="topbar-sub">Gestión de Beneficios</div>
     </div>
-    <a href="/" style="color:#fff; text-decoration:none; font-size:13px;">&#8592; Volver al menú</a>
+    <a href="/" class="btn-back">&#8592; Volver al inicio</a>
   </div>
 
   <div class="content">
     
+    <div class="filter-bar">
+      <label style="font-weight: 600; color: #111827; font-size: 14px;">Carrera a simular:</label>
+      <select id="carrera-select" onchange="actualizarSimulacion()">
+        <% carreras.forEach(c => { %>
+          <option value="<%= c.arancel %>"><%= c.nombre %> - $<%= Number(c.arancel).toLocaleString('es-CL') %></option>
+        <% }) %>
+      </select>
+    </div>
+    
     <div class="metrics">
       <div class="metric-card neutral">
-        <div class="metric-label">Arancel Anual</div>
-        <div class="metric-value" id="display-base" data-base="<%= arancelBase %>">
-          $<%= Number(arancelBase).toLocaleString('es-CL') %>
-        </div>
+        <div class="metric-label">Arancel Anual (Base)</div>
+        <div class="metric-value" id="display-base">$0</div>
       </div>
       <div class="metric-card purple">
         <div class="metric-label">Ahorro Simulado</div>
@@ -58,56 +73,63 @@
       </div>
       <div class="metric-card success">
         <div class="metric-label">Costo Proyectado</div>
-        <div class="metric-value" id="display-proyectado" style="color: #16A34A;">
-          $<%= Number(arancelBase).toLocaleString('es-CL') %>
-        </div>
+        <div class="metric-value" id="display-proyectado" style="color: #16A34A;">$0</div>
       </div>
     </div>
 
     <h2 style="margin-bottom: 1rem; font-size: 16px;">Selecciona beneficios para evaluar financiamiento</h2>
 
     <div class="grid">
-        <% if (beneficios && beneficios.length > 0) { %>
-            <% beneficios.forEach(b => { %>
-            <label class="card">
-                <div class="card-header">
-                <input type="checkbox" class="beneficio-chk" value="<%= b.cobertura %>" onchange="actualizarSimulacion()">
-                <span class="card-nombre"><%= b.tipo %></span>
-                </div>
-                <div class="card-body">
-                <div class="card-row">
-                    <span style="color:#6B7280;"><span class="dot" style="background:#16A34A;"></span>Cobertura</span>
-                    <span style="font-weight:600;">$<%= Number(b.cobertura).toLocaleString('es-CL') %></span>
-                </div>
-                <div class="card-row" style="align-items: flex-start;">
-                <span style="color:#6B7280;">
-                    <span class="dot" style="background:#7C3AED;"></span>Vigencia
-                </span>
-                <span style="font-weight:600; text-align: right;">
-                    <%= b.vigencia %> <br>
-                </span>
-                </div>
-                </div>
-            </label>
-            <% }) %>
-        <% } %>
+      <% if (beneficios && beneficios.length > 0) { %>
+        <% beneficios.forEach(b => { %>
+          <label class="card">
+            <div class="card-header">
+              <input type="checkbox" class="beneficio-chk" value="<%= b.cobertura %>" onchange="actualizarSimulacion()">
+              <span class="card-nombre"><%= b.tipo %></span>
+            </div>
+            <div class="card-body">
+              <div class="card-row">
+                <span style="color:#6B7280;">Estudiante asignado:</span>
+                <span style="font-weight:600;"><%= b.nombre %></span>
+              </div>
+              <div class="card-row">
+                <span style="color:#6B7280;">Cobertura:</span>
+                <span style="font-weight:600;">$<%= Number(b.cobertura).toLocaleString('es-CL') %></span>
+              </div>
+              <div class="card-row">
+                <span style="color:#6B7280;">Vigencia hasta:</span>
+                <span style="font-weight:600;"><%= b.vigencia %></span>
+              </div>
+            </div>
+          </label>
+        <% }) %>
+      <% } %>
     </div>
   </div>
 
   <script>
     function actualizarSimulacion() {
-      const arancelBase = parseInt(document.getElementById('display-base').getAttribute('data-base'));
-      let ahorro = 0;
+      // 1. Obtener el arancel base del selector
+      const selector = document.getElementById('carrera-select');
+      const arancelBase = parseInt(selector.value);
       
+      // 2. Sumar la cobertura de los beneficios marcados
+      let ahorro = 0;
       document.querySelectorAll('.beneficio-chk:checked').forEach(chk => {
         ahorro += parseInt(chk.value);
       });
 
+      // 3. Calcular el costo final proyectado
       const proyectado = Math.max(0, arancelBase - ahorro);
 
+      // 4. Actualizar la pantalla con formato de pesos
+      document.getElementById('display-base').innerText = '$' + arancelBase.toLocaleString('es-CL');
       document.getElementById('display-descuento').innerText = '$' + ahorro.toLocaleString('es-CL');
       document.getElementById('display-proyectado').innerText = '$' + proyectado.toLocaleString('es-CL');
     }
+
+    // Ejecutamos la función al cargar la página para que inicie con los valores correctos
+    window.onload = actualizarSimulacion;
   </script>
 </body>
 </html>
