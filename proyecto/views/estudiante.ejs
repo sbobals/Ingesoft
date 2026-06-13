@@ -44,9 +44,20 @@
         <div class="estado-card">
             <div class="estado-info">
                 <h3>Estado de cuenta</h3>
-                <div class="estado-rut">RUT: <%= usuario.rut %></div>
+                <div class="estado-rut">
+                    Usuario: <%= usuario.username %>
+                </div>
             </div>
-            <div class="estado-badge">✓ Sin deudas vencidas</div>
+            <% if (saldoPendiente > 0) { %>
+                <div class="estado-badge alerta">
+                    ⚠ Saldo pendiente:
+                    $<%= saldoPendiente.toLocaleString('es-CL') %>
+                </div>
+            <% } else { %>
+                <div class="estado-badge">
+                    ✓ Sin saldo pendiente
+                </div>
+            <% } %>
         </div>
 
         <div class="menu-horizontal">
@@ -65,7 +76,7 @@
 
             <div class="menu-item">
                 <div class="menu-item-icon">🗂️</div>
-                <a href="/historia/1" class="btn-portal">Mi Historial Financiero</a>
+                <a href="/mi-historial" class="btn-portal">Mi Historial Financiero</a>
                 <p class="desc-portal">Revisa el registro histórico de tus pagos y matrículas.</p>
             </div>
 

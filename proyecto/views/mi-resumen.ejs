@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Estado Financiero</title>
+    <link rel="stylesheet" href="CSS/paneles.css">
+    <link rel="stylesheet" href="CSS/mi-resumen.css">
+</head>
+
+<body>
+
+    <!-- TOPBAR -->
+    <div class="topbar-institucional">
+        <div class="topbar-content">
+
+            <span class="logo-placeholder">
+                🎓 UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
+            </span>
+
+            <div class="topbar-right">
+                 <a href="/" class="btn-back">&#8592; Volver al menú</a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="main-container">
+
+        <!-- CABECERA -->
+        <div class="panel-header">
+
+            <div class="role-icon student">
+                🎓
+            </div>
+
+            <div class="panel-header-text">
+
+                <div class="role-tag student">
+                    ESTUDIANTE
+                </div>
+
+                <h2>
+                    Mi Estado Financiero
+                </h2>
+
+                <p>
+                    Bienvenido(a), <strong><%= estudiante.nombre %></strong>.
+                    Aquí puedes consultar tu situación financiera actual.
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- TARJETAS -->
+        <div class="dashboard-grid">
+
+            <div class="finance-card deuda-card">
+
+                <div class="finance-icon">💸</div>
+
+                <h3>Deudas</h3>
+
+                <div class="finance-value">
+                    $<%= Number(estudiante.deuda).toLocaleString('es-CL') %>
+                </div>
+
+                <p>
+                    Total de deudas registradas en el sistema.
+                </p>
+
+            </div>
+
+            <div class="finance-card pago-card">
+
+                <div class="finance-icon">💰</div>
+
+                <h3>Pagos Realizados</h3>
+
+                <div class="finance-value">
+                    $<%= Number(estudiante.pagos).toLocaleString('es-CL') %>
+                </div>
+
+                <p>
+                    Total de pagos efectuados.
+                </p>
+
+            </div>
+
+            <div class="finance-card beneficio-card">
+
+                <div class="finance-icon">🎓</div>
+
+                <h3>Beneficios</h3>
+
+                <div class="finance-value">
+                    $<%= Number(estudiante.beneficios).toLocaleString('es-CL') %>
+                </div>
+
+                <p>
+                    Becas y beneficios aplicados.
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- SALDO -->
+        <%
+        const saldo =
+            Number(estudiante.deuda) -
+            Number(estudiante.pagos) -
+            Number(estudiante.beneficios);
+        %>
+
+        <div class="saldo-principal">
+
+            <span class="saldo-label">
+                Estado Financiero Actual
+            </span>
+
+            <div class="saldo-monto <%= saldo > 0 ? 'saldo-rojo' : 'saldo-verde' %>">
+
+                $<%= Math.abs(saldo).toLocaleString('es-CL') %>
+
+            </div>
+
+            <p>
+
+                <% if(saldo > 0){ %>
+                    Mantienes un saldo pendiente por regularizar.
+                <% } else { %>
+                    No registras deuda pendiente.
+                <% } %>
+
+            </p>
+
+        </div>
+
+        <!-- ACCIONES -->
+        <div class="acciones">
+
+            <a href="/mi-historial" class="action-btn">
+                🗂️ Mi Historial Financiero
+            </a>
+
+            <a href="/mis-beneficios" class="action-btn">
+                🎓 Mis Beneficios
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer-portal">
+
+        <hr>
+
+        <p>
+            © Universidad Técnica Federico Santa María
+        </p>
+
+        <p>
+            Sistema de Gestión Financiera Estudiantil
+        </p>
+
+    </div>
+
+</body>
+</html>
