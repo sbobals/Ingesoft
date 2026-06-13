@@ -861,50 +861,56 @@ app.get('/reporte-global', async (req, res) => {
 /* =========================
    HISTORIAL FINANCIERO
 ========================= */
-app.get('/historial/1', async (req, res) => {
+app.get('/historial/:id', async (req, res) => {
+	try {
+		const estudianteId = req.params.id;
 
-  try {
+		const { year, semester } = req.query; 
 
-    const estudianteId = req.params.id;
+		let queryText = `
+	    SELECT 
+		detalle_historico.id, 
+		cobertura AS monto_beneficio, 
+		deudas.monto AS monto_deuda, 
+		pagos.monto AS monto_pago,
+		detalle_historico.ano,
+		detalle_historico.semestre
+	    FROM 
+		detalle_historico
+	    INNER JOIN beneficios ON beneficios.estudiante_id = detalle_historico.id
+	    INNER JOIN deudas ON deudas.estudiante_id = detalle_historico.id
+	    INNER JOIN pagos ON pagos.estudiante_id = detalle_historico.id
+	    WHERE detalle_historico.id = $1
+	`;
 
-    const estudiante = await pool.query(`
-      SELECT * FROM estudiantes
-      WHERE id = $1
-    `, [estudianteId]);
+		const queryParams = [estudianteId];
 
-    const deudas = await pool.query(`
-      SELECT * FROM deudas
-      WHERE estudiante_id = $1
-    `, [estudianteId]);
+		if (year && semester) {
+			queryText += ` AND detalle_historico.ano = $2 AND detalle_historico.semestre = $3`;
+			queryParams.push(Number(year), Number(semester));
+		}
 
-    const pagos = await pool.query(`
-      SELECT * FROM pagos
-      WHERE estudiante_id = $1
-    `, [estudianteId]);
+		const estudiante = await pool.query(queryText, queryParams);
 
-    const beneficios = await pool.query(`
-      SELECT * FROM beneficios
-      WHERE estudiante_id = $1
-    `, [estudianteId]);
+		if (year && semester) {
+			console.log(`Filtrado por Año: ${year}, Semestre: ${semester}`);
+		} else {
+			console.log("Mostrando todo el historial por defecto");
+		}
 
-	/*Hola*/
-	res.render('historial')
-/*
-    res.json({
-      estudiante: estudiante.rows[0],
-      deudas: deudas.rows,
-      pagos: pagos.rows,
-      beneficios: beneficios.rows
-    });
-*/
-  } catch (err) {
+		res.render('historial', {
+			estudiantes: estudiante.rows,
+			estudianteId: estudianteId
+		});
 
-    console.error(err);
-
-    res.status(500).send('Error obteniendo historial');
-  }
+	} catch (err) {
+		console.error(err);
+		res.status(500).send('Error obteniendo historial');
+	}
 });
-
+app.get('/historial/:year/:semester', async (req, res) => {
+	res.status(500).send('Pan con pate');
+})
 /* =========================
    SERVIDOR
 ========================= */
