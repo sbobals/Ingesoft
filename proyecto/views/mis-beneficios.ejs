@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Beneficios</title>
+    <link rel="stylesheet" href="CSS/paneles.css">
+</head>
+<body>
+
+<div class="topbar-institucional">
+    <div class="topbar-content">
+        <span class="logo-placeholder">
+            🎓 UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
+        </span>
+
+        <div class="topbar-right">
+            <a href="/" class="btn-back">&#8592; Volver al menú</a>
+        </div>
+    </div>
+</div>
+
+<div class="main-container">
+
+    <div class="panel-header">
+
+        <div class="role-icon student">
+            🎁
+        </div>
+
+        <div class="panel-header-text">
+
+            <div class="role-tag student">
+                BENEFICIOS
+            </div>
+
+            <h2>Mis Beneficios</h2>
+
+            <p>
+                Beneficios y ayudas financieras asociadas a tu cuenta.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="menu-horizontal">
+
+        <% beneficios.forEach(beneficio => { %>
+
+            <div class="menu-item">
+
+    <div class="menu-item-icon">
+        🎓
+            </div>
+
+            <span class="btn-portal">
+                <%= beneficio.tipo %>
+            </span>
+
+            <p class="desc-portal">
+                $<%= Number(beneficio.cobertura).toLocaleString('es-CL') %>
+            </p>
+
+            <p class="desc-portal">
+                Vigencia: <%= beneficio.vigencia.toISOString().split('T')[0] %>
+            </p>
+
+            <a href="/beneficios" class="item-arrow student">
+                Simular impacto →
+            </a>
+            <div style="margin-top: 30px;">
+
+        </div>
+
+        <% }) %>
+
+    </div>
+
+</div>
+
+<div class="footer-portal">
+    <hr>
+    <p>© Universidad Técnica Federico Santa María</p>
+</div>
+
+</body>
+</html>

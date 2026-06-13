@@ -126,12 +126,56 @@ app.get('/ejecutivo',
   }
 );
 
-app.get('/estudiante',
+app.get(
+  '/estudiante',
   verificarRol('estudiante'),
-  (req,res)=>{
-    res.render('estudiante');
-  }
-);
+  async (req, res) => {
+
+    try {
+
+      const estudianteId = req.session.usuario.estudiante_id;
+
+      const result = await pool.query(`
+        SELECT
+          COALESCE(SUM(DISTINCT d.monto),0) AS deuda,
+          COALESCE(SUM(DISTINCT p.monto),0) AS pagos,
+          COALESCE(SUM(DISTINCT b.cobertura),0) AS beneficios
+        FROM estudiantes e
+
+        LEFT JOIN deudas d
+          ON e.id = d.estudiante_id
+
+        LEFT JOIN pagos p
+          ON e.id = p.estudiante_id
+
+        LEFT JOIN beneficios b
+          ON e.id = b.estudiante_id
+
+        WHERE e.id = $1
+
+        GROUP BY e.id
+      `,[estudianteId]);
+
+      const datos = result.rows[0];
+
+      const saldoPendiente =
+        Number(datos.deuda) -
+        Number(datos.pagos) -
+        Number(datos.beneficios);
+
+      res.render('estudiante', {
+        usuario: req.session.usuario,
+        saldoPendiente
+      });
+
+    } catch(err){
+
+      console.error(err);
+      res.status(500).send('Error');
+
+    }
+
+});
 /* =========================
    VER ESTUDIANTES
 ========================= */
@@ -309,7 +353,40 @@ app.get('/pagos', async (req, res) => {
     res.status(500).send('Error obteniendo pagos');
   }
 });
+/* =========================
+   BENEFICIOS POR ESTUDIANTE
+========================= */
+app.get(
+  '/mis-beneficios',
+  verificarRol('estudiante'),
+  async (req, res) => {
 
+    try {
+
+      const estudianteId = req.session.usuario.estudiante_id;
+
+      const beneficios = await pool.query(`
+        SELECT
+          tipo,
+          cobertura,
+          vigencia
+        FROM beneficios
+        WHERE estudiante_id = $1
+        ORDER BY vigencia DESC
+      `, [estudianteId]);
+
+      res.render('mis-beneficios', {
+        beneficios: beneficios.rows
+      });
+
+    } catch (err) {
+
+      console.error(err);
+      res.status(500).send('Error al cargar beneficios');
+
+    }
+
+});
 /* =========================
    VER BENEFICIOS
 ========================= */
@@ -357,7 +434,54 @@ const COLORS = {
   border:       '#E5E7EB',
   white:        '#FFFFFF',
 };
+/*=================================
+    RESUMEN ESTUDIANTE
+===================================*/
+app.get(
+  '/mi-resumen',
+  verificarRol('estudiante'),
+  async (req, res) => {
 
+    try {
+
+      const estudianteId = req.session.usuario.estudiante_id;
+
+      const result = await pool.query(`
+        SELECT
+          e.id,
+          e.nombre,
+          COALESCE(SUM(DISTINCT d.monto),0) AS deuda,
+          COALESCE(SUM(DISTINCT p.monto),0) AS pagos,
+          COALESCE(SUM(DISTINCT b.cobertura),0) AS beneficios
+        FROM estudiantes e
+
+        LEFT JOIN deudas d
+          ON e.id = d.estudiante_id
+
+        LEFT JOIN pagos p
+          ON e.id = p.estudiante_id
+
+        LEFT JOIN beneficios b
+          ON e.id = b.estudiante_id
+
+        WHERE e.id = $1
+
+        GROUP BY e.id, e.nombre
+      `, [estudianteId]);
+
+      res.render('mi-resumen', {
+        estudiante: result.rows[0]
+      });
+
+    } catch (err) {
+
+      console.error(err);
+      res.status(500).send('Error');
+
+    }
+
+  }
+);
 /* =========================
    RESUMEN FINANCIERO
 ========================= */
@@ -861,6 +985,11 @@ app.get('/reporte-global', async (req, res) => {
 /* =========================
    HISTORIAL FINANCIERO
 ========================= */
+app.get('/mi-historial',verificarRol('estudiante'),(req, res) => {
+    const estudianteId = req.session.usuario.estudiante_id;
+    res.redirect(`/historial/${estudianteId}`);
+  }
+);
 app.get('/historial/:id', async (req, res) => {
 	try {
 		const estudianteId = req.params.id;

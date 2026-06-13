@@ -1,3 +1,7 @@
+CREATE TABLE estudiantes (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL
+);
 CREATE TABLE usuarios (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
@@ -5,11 +9,6 @@ CREATE TABLE usuarios (
     password VARCHAR(100) NOT NULL,
     rol VARCHAR(20) NOT NULL,
     estudiante_id INT REFERENCES estudiantes(id)
-);
-
-CREATE TABLE estudiantes (
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE aranceles (

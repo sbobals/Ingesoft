@@ -31,6 +31,33 @@
     .card-body { padding: 1.25rem; font-size: 13px; }
     .card-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
     .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .volver-container{
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    }
+
+    .btn-volver{
+        background: #1E3A8A;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn-volver:hover{
+        background: #162d6b;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+    .btn-volver:active{
+        transform: translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -93,7 +120,11 @@
         <% } %>
     </div>
   </div>
-
+  <div class="volver-container">
+      <a href="javascript:history.back()" class="btn-volver">
+          ← Volver atrás
+      </a>
+  </div>
   <script>
     function actualizarSimulacion() {
       const arancelBase = parseInt(document.getElementById('display-base').getAttribute('data-base'));
