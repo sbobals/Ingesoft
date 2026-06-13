@@ -389,12 +389,17 @@ app.get(
 
 });
 /* =========================
-   VER BENEFICIOS
+   BENEFICIOS
 ========================= */
 app.get('/beneficios', async (req, res) => {
   try {
-    const arancelBase = 6500000; // El arancel anual para simular
-    
+    const carreras = [
+      { nombre: "Ingeniería Civil Informática", arancel: 7000000 },
+      { nombre: "Ingeniería Comercial", arancel: 6800000 },
+      { nombre: "Arquitectura", arancel: 7000000 },
+      { nombre: "Técnico Universitario en Informática", arancel: 4500000 }
+    ];
+
     const result = await pool.query(`
       SELECT
         beneficios.id,
@@ -406,10 +411,7 @@ app.get('/beneficios', async (req, res) => {
       JOIN estudiantes ON beneficios.estudiante_id = estudiantes.id
     `);
 
-    res.render('beneficios', { 
-      arancelBase: arancelBase, 
-      beneficios: result.rows 
-    });
+    res.render('beneficios', { carreras: carreras, beneficios: result.rows });
 
   } catch (err) {
     console.error(err);
