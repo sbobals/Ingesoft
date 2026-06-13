@@ -1,3 +1,8 @@
+CREATE TABLE estudiantes (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL
+);
+
 CREATE TABLE usuarios (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
@@ -5,11 +10,6 @@ CREATE TABLE usuarios (
     password VARCHAR(100) NOT NULL,
     rol VARCHAR(20) NOT NULL,
     estudiante_id INT REFERENCES estudiantes(id)
-);
-
-CREATE TABLE estudiantes (
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE aranceles (
@@ -23,7 +23,7 @@ CREATE TABLE deudas (
     id SERIAL PRIMARY KEY,
     estudiante_id INT REFERENCES estudiantes(id),
     arancel_id INT REFERENCES aranceles(id),
-    monto INT DEFAULT 0,
+    monto INT NOT NULL,
     fecha_vencimiento DATE,
     estado VARCHAR(50)
 );
@@ -50,12 +50,3 @@ CREATE TABLE detalle_pagos (
     deuda_id INT REFERENCES deudas(id),
     monto_aplicado INT NOT NULL
 );
-
-CREATE TABLE detalle_historico (
-    id INT REFERENCES estudiantes(id),
-    ano INT,
-    semestre INT,
-    PRIMARY KEY (id, ano, semestre)
-);
-
-
