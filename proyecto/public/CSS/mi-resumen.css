@@ -131,3 +131,280 @@
 .secondary:hover{
     background:#4B5563;
 }
+
+/* ═══════════════════════════════════════════════════
+   HISTORIAL DE PAGOS — mi-resumen.css (adiciones)
+   Agregar al final del archivo CSS existente
+════════════════════════════════════════════════════ */
+
+/* ── Sección contenedora ── */
+.historial-section {
+    margin-top: 2rem;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+/* ── Cabecera: título + filtro ── */
+.historial-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.historial-titulo {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+/* ── Formulario de periodo ── */
+.periodo-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.periodo-fields {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.campo-periodo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.campo-periodo label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.campo-periodo input[type="date"] {
+    padding: 0.4rem 0.65rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #374151;
+    background: #fff;
+    cursor: pointer;
+}
+
+.campo-periodo input[type="date"]:focus {
+    outline: 2px solid #6366f1;
+    outline-offset: 1px;
+    border-color: transparent;
+}
+
+.btn-filtrar {
+    padding: 0.45rem 1rem;
+    background: #1d4ed8;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+
+.btn-filtrar:hover {
+    background: #1e40af;
+}
+
+/* ── Tabla de pagos ── */
+.tabla-wrapper {
+    overflow-x: auto;
+}
+
+.tabla-pagos {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.tabla-pagos thead tr {
+    background: #f1f5f9;
+}
+
+.tabla-pagos th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.tabla-pagos td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+}
+
+.tabla-pagos tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tabla-pagos tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* ID del pago */
+.pago-id {
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.8rem;
+}
+
+/* Monto destacado */
+.monto-celda {
+    font-weight: 700;
+    color: #1f2937;
+    white-space: nowrap;
+}
+
+/* ── Badges de estado ── */
+.badge-estado {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Estado: pagado / completado */
+.badge-pagado,
+.badge-completado {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+/* Estado: pendiente */
+.badge-pendiente {
+    background: #fef9c3;
+    color: #a16207;
+}
+
+/* Estado: rechazado / fallido */
+.badge-rechazado,
+.badge-fallido {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Estado no reconocido */
+.badge-sin-estado {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* ── Detalle de deudas cubiertas ── */
+.lista-detalles {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.lista-detalles li {
+    font-size: 0.82rem;
+    color: #4b5563;
+}
+
+.vencimiento {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.sin-detalle {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* ── Fila total (tfoot) ── */
+.fila-total {
+    background: #f1f5f9;
+}
+
+.fila-total td {
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: #1f2937;
+    border-top: 2px solid #e5e7eb;
+}
+
+/* ── Estado vacío ── */
+.historial-vacio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: #6b7280;
+    gap: 0.5rem;
+}
+
+.vacio-icono {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.historial-vacio p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.vacio-sugerencia {
+    color: #9ca3af;
+    font-size: 0.8rem !important;
+}
+
+/* ── Responsivo ── */
+@media (max-width: 640px) {
+
+    .historial-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .periodo-fields {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-filtrar {
+        width: 100%;
+        text-align: center;
+    }
+
+    .tabla-pagos th,
+    .tabla-pagos td {
+        padding: 0.65rem 0.75rem;
+    }
+
+}

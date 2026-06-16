@@ -15,11 +15,12 @@
         <div class="topbar-content">
 
             <span class="logo-placeholder">
-                🎓 UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
+                <img src="/logo.png" alt="UTFSM">
+                 UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
             </span>
 
             <div class="topbar-right">
-                 <a href="/" class="btn-back">&#8592; Volver al menú</a>
+                <a href="/" class="btn-back">&#8592; Volver al menú</a>
             </div>
 
         </div>
@@ -54,7 +55,7 @@
 
         </div>
 
-        <!-- TARJETAS -->
+        <!-- TARJETAS RESUMEN (Criterio 1) -->
         <div class="dashboard-grid">
 
             <div class="finance-card deuda-card">
@@ -107,44 +108,179 @@
 
         </div>
 
-        <!-- SALDO -->
-        <%
-        const saldo =
-            Number(estudiante.deuda) -
-            Number(estudiante.pagos) -
-            Number(estudiante.beneficios);
-        %>
-
+        <!-- SALDO PENDIENTE -->
         <div class="saldo-principal">
 
             <span class="saldo-label">
                 Estado Financiero Actual
             </span>
 
-            <div class="saldo-monto <%= saldo > 0 ? 'saldo-rojo' : 'saldo-verde' %>">
-
-                $<%= Math.abs(saldo).toLocaleString('es-CL') %>
-
+            <div class="saldo-monto <%= Number(estudiante.saldo_pendiente) > 0 ? 'saldo-rojo' : 'saldo-verde' %>">
+                $<%= Math.abs(Number(estudiante.saldo_pendiente)).toLocaleString('es-CL') %>
             </div>
 
             <p>
-
-                <% if(saldo > 0){ %>
+                <% if (Number(estudiante.saldo_pendiente) > 0) { %>
                     Mantienes un saldo pendiente por regularizar.
                 <% } else { %>
                     No registras deuda pendiente.
                 <% } %>
-
             </p>
 
         </div>
 
+        <!-- ═══════════════════════════════════════════════
+             HISTORIAL DE PAGOS POR PERIODO (Criterio 2)
+        ════════════════════════════════════════════════ -->
+        <div class="historial-section">
+
+            <div class="historial-header">
+
+                <h3 class="historial-titulo">
+                    🗂️ Historial de Pagos
+                </h3>
+
+                <!-- Filtro de periodo -->
+                <form class="periodo-form" method="GET" action="/mi-resumen">
+
+                    <div class="periodo-fields">
+
+                        <div class="campo-periodo">
+                            <label for="desde">Desde</label>
+                            <input
+                                type="date"
+                                id="desde"
+                                name="desde"
+                                value="<%= periodo.desde %>"
+                            >
+                        </div>
+
+                        <div class="campo-periodo">
+                            <label for="hasta">Hasta</label>
+                            <input
+                                type="date"
+                                id="hasta"
+                                name="hasta"
+                                value="<%= periodo.hasta %>"
+                            >
+                        </div>
+
+                        <button type="submit" class="btn-filtrar">
+                            Filtrar
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+            <!-- Tabla de pagos -->
+            <% if (historialPagos.length === 0) { %>
+
+                <div class="historial-vacio">
+                    <span class="vacio-icono">📭</span>
+                    <p>No hay pagos registrados en el período seleccionado.</p>
+                    <p class="vacio-sugerencia">Prueba ajustando el rango de fechas.</p>
+                </div>
+
+            <% } else { %>
+
+                <div class="tabla-wrapper">
+                    <table class="tabla-pagos">
+
+                        <thead>
+                            <tr>
+                                <th>N° Pago</th>
+                                <th>Fecha</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                                <th>Deudas cubiertas</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <% historialPagos.forEach(function(pago) { %>
+                            <tr>
+
+                                <!-- ID del pago -->
+                                <td class="pago-id">#<%= pago.id %></td>
+
+                                <!-- Fecha formateada -->
+                                <td>
+                                    <%= new Date(pago.fecha).toLocaleDateString('es-CL', {
+                                        day:   '2-digit',
+                                        month: '2-digit',
+                                        year:  'numeric'
+                                    }) %>
+                                </td>
+
+                                <!-- Monto -->
+                                <td class="monto-celda">
+                                    $<%= Number(pago.monto).toLocaleString('es-CL') %>
+                                </td>
+
+                                <!-- Badge de estado -->
+                                <td>
+                                    <span class="badge-estado badge-<%= (pago.estado || 'sin-estado').toLowerCase().replace(/\s+/g, '-') %>">
+                                        <%= pago.estado || '—' %>
+                                    </span>
+                                </td>
+
+                                <!-- Detalle de deudas que cubre este pago -->
+                                <td class="detalles-celda">
+                                    <% if (pago.detalles && pago.detalles.length > 0) { %>
+                                        <ul class="lista-detalles">
+                                            <% pago.detalles.forEach(function(d) { %>
+                                            <li>
+                                                Deuda #<%= d.deuda_id %>
+                                                — $<%= Number(d.monto_aplicado).toLocaleString('es-CL') %>
+                                                <% if (d.vencimiento) { %>
+                                                    <span class="vencimiento">
+                                                        (vence <%= new Date(d.vencimiento).toLocaleDateString('es-CL', {
+                                                            day:   '2-digit',
+                                                            month: '2-digit',
+                                                            year:  'numeric'
+                                                        }) %>)
+                                                    </span>
+                                                <% } %>
+                                            </li>
+                                            <% }) %>
+                                        </ul>
+                                    <% } else { %>
+                                        <span class="sin-detalle">Sin desglose</span>
+                                    <% } %>
+                                </td>
+
+                            </tr>
+                            <% }) %>
+                        </tbody>
+
+                        <!-- Totalizador del periodo filtrado -->
+                        <tfoot>
+                            <tr class="fila-total">
+                                <td colspan="2">Total del período</td>
+                                <td class="monto-celda">
+                                    $<%=
+                                        historialPagos
+                                            .reduce(function(acc, p) { return acc + Number(p.monto); }, 0)
+                                            .toLocaleString('es-CL')
+                                    %>
+                                </td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+
+                    </table>
+                </div>
+
+            <% } %>
+
+        </div>
+        <!-- FIN HISTORIAL -->
+
         <!-- ACCIONES -->
         <div class="acciones">
-
-            <a href="/mi-historial" class="action-btn">
-                🗂️ Mi Historial Financiero
-            </a>
 
             <a href="/mis-beneficios" class="action-btn">
                 🎓 Mis Beneficios

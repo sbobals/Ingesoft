@@ -50,3 +50,10 @@ CREATE TABLE detalle_pagos (
     deuda_id INT REFERENCES deudas(id),
     monto_aplicado INT NOT NULL
 );
+
+CREATE TABLE detalle_historico (
+    id INT REFERENCES estudiantes(id),
+    ano INT,
+    semestre INT,
+    PRIMARY KEY (id, ano, semestre)
+);

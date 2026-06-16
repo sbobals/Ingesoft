@@ -450,49 +450,125 @@ const COLORS = {
 /*=================================
     RESUMEN ESTUDIANTE
 ===================================*/
+/*=================================
+    RESUMEN ESTUDIANTE
+===================================*/
 app.get(
   '/mi-resumen',
   verificarRol('estudiante'),
   async (req, res) => {
-
     try {
-
       const estudianteId = req.session.usuario.estudiante_id;
 
-      const result = await pool.query(`
+      // Parámetros de periodo para el historial de pagos (Criterio 2)
+      // Formato esperado: ?desde=2024-01-01&hasta=2024-12-31
+      // Si no se envían, se usa el mes en curso por defecto
+      const hoy = new Date();
+      const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+        .toISOString().split('T')[0];
+      const ultimoDiaMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
+        .toISOString().split('T')[0];
+
+      const desde = req.query.desde || primerDiaMes;
+      const hasta = req.query.hasta || ultimoDiaMes;
+
+      // ── Consulta 1: Resumen financiero integrado (Criterio 1) ──────────────
+      // Se hacen subqueries independientes para evitar el producto cartesiano
+      // que ocurre al hacer JOIN de deudas + pagos + beneficios simultáneamente.
+      const resumenResult = await pool.query(`
         SELECT
           e.id,
           e.nombre,
-          COALESCE(SUM(DISTINCT d.monto),0) AS deuda,
-          COALESCE(SUM(DISTINCT p.monto),0) AS pagos,
-          COALESCE(SUM(DISTINCT b.cobertura),0) AS beneficios
+
+          COALESCE(deudas_agg.total_deuda, 0)      AS deuda,
+          COALESCE(pagos_agg.total_pagos, 0)        AS pagos,
+          COALESCE(beneficios_agg.total_beneficios, 0) AS beneficios,
+
+          -- Saldo pendiente real = deuda - pagos aplicados - beneficios
+          COALESCE(deudas_agg.total_deuda, 0)
+            - COALESCE(pagos_agg.total_pagos, 0)
+            - COALESCE(beneficios_agg.total_beneficios, 0) AS saldo_pendiente
+
         FROM estudiantes e
 
-        LEFT JOIN deudas d
-          ON e.id = d.estudiante_id
+        -- Total de deudas del estudiante
+        LEFT JOIN (
+          SELECT estudiante_id, SUM(monto) AS total_deuda
+          FROM deudas
+          WHERE estudiante_id = $1
+          GROUP BY estudiante_id
+        ) deudas_agg ON e.id = deudas_agg.estudiante_id
 
-        LEFT JOIN pagos p
-          ON e.id = p.estudiante_id
+        -- Total de pagos realizados del estudiante
+        LEFT JOIN (
+          SELECT estudiante_id, SUM(monto) AS total_pagos
+          FROM pagos
+          WHERE estudiante_id = $1
+          GROUP BY estudiante_id
+        ) pagos_agg ON e.id = pagos_agg.estudiante_id
 
-        LEFT JOIN beneficios b
-          ON e.id = b.estudiante_id
+        -- Total de cobertura por beneficios del estudiante
+        LEFT JOIN (
+          SELECT estudiante_id, SUM(cobertura) AS total_beneficios
+          FROM beneficios
+          WHERE estudiante_id = $1
+          GROUP BY estudiante_id
+        ) beneficios_agg ON e.id = beneficios_agg.estudiante_id
 
         WHERE e.id = $1
-
-        GROUP BY e.id, e.nombre
       `, [estudianteId]);
 
+      // ── Consulta 2: Historial de pagos por periodo (Criterio 2) ───────────
+      const pagosResult = await pool.query(`
+        SELECT
+          p.id,
+          p.monto,
+          p.fecha,
+          p.estado,
+
+          -- Detalle de a qué deudas se aplicó cada pago
+          COALESCE(
+            JSON_AGG(
+              JSON_BUILD_OBJECT(
+                'deuda_id',       dp.deuda_id,
+                'monto_aplicado', dp.monto_aplicado,
+                'vencimiento',    d.fecha_vencimiento,
+                'estado_deuda',   d.estado
+              )
+            ) FILTER (WHERE dp.id IS NOT NULL),
+            '[]'
+          ) AS detalles
+
+        FROM pagos p
+
+        LEFT JOIN detalle_pagos dp
+          ON p.id = dp.pago_id
+
+        LEFT JOIN deudas d
+          ON dp.deuda_id = d.id
+
+        WHERE p.estudiante_id = $1
+          AND p.fecha BETWEEN $2 AND $3
+
+        GROUP BY p.id, p.monto, p.fecha, p.estado
+        ORDER BY p.fecha DESC
+      `, [estudianteId, desde, hasta]);
+
+      // ── Si el estudiante no existe en BD ──────────────────────────────────
+      if (!resumenResult.rows[0]) {
+        return res.status(404).send('Estudiante no encontrado');
+      }
+
       res.render('mi-resumen', {
-        estudiante: result.rows[0]
+        estudiante: resumenResult.rows[0],
+        historialPagos: pagosResult.rows,
+        periodo: { desde, hasta }
       });
 
     } catch (err) {
-
       console.error(err);
-      res.status(500).send('Error');
-
+      res.status(500).send('Error al cargar el resumen');
     }
-
   }
 );
 /* =========================
@@ -1053,6 +1129,7 @@ app.get('/historial/:id', async (req, res) => {
 app.get('/historial/:year/:semester', async (req, res) => {
 	res.status(500).send('Pan con pate');
 })
+
 /* =========================
    SERVIDOR
 ========================= */

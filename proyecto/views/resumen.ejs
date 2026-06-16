@@ -9,16 +9,27 @@
 <body>
 
   <!-- TOPBAR -->
-  <div class="topbar">
-    <div>
-      <div class="topbar-title">Dashboard Financiero</div>
-      <div class="topbar-sub">Sistema Financiero Estudiantil</div>
+   <div class="topbar-institucional">
+    <div class="topbar-content">
+      <div class="logo-placeholder">
+        <img src="/logo.png" alt="UTFSM">
+        UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
+      </div>
+      <div class="topbar-right">
+        <a href="/">&#8592; Volver al inicio</a>
+      </div>
     </div>
-    <a href="/" class="btn-back">&#8592; Volver al menú</a>
   </div>
 
   <div class="content">
-
+    <!-- HEADER L -->
+    <div class="panel-header">
+      <div class="role-icon">📋</div>
+      <div class="panel-header-text">
+        <h2>Resumenes Financieros</h2>
+        <p>Visualiza los resumenes de los saldos consolidados.</p>
+      </div>
+    </div>
     <!-- FILTRO -->
     <form method="GET" action="/resumen" class="filter-bar">
       <label>Desde</label>

@@ -1,3 +1,23 @@
+/* ---- TOKENS ---- */
+:root {
+    --utfsm-azul:       #003366;
+    --utfsm-rojo:       #C8102E;
+    --bg:               #F0F4F8;
+    --card-bg:          #FFFFFF;
+    --border:           #DDE3EC;
+    --text-primary:     #1A2535;
+    --text-secondary:   #5A6A7E;
+    --text-muted:       #8A9AB0;
+
+    /* Colores por rol */
+    --color-admin:      #C8102E;
+    --color-admin-soft: #FEF0EE;
+    --color-exec:       #003366;
+    --color-exec-soft:  #EEF4FE;
+    --color-student:    #1B6B3A;
+    --color-student-soft: #EDFAF3;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
@@ -7,36 +27,54 @@
       min-height: 100vh;
     }
 
-    /* ── TOPBAR ── */
-    .topbar {
-      background: #1E3A8A;
-      padding: 0 2rem;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .topbar-title {
-      color: #fff;
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: -0.3px;
-    }
-    .topbar-sub {
-      color: rgba(255,255,255,0.55);
-      font-size: 13px;
-      margin-top: 2px;
-    }
-    .btn-back {
-      color: rgba(255,255,255,0.75);
-      text-decoration: none;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: color 0.15s;
-    }
-    .btn-back:hover { color: #fff; }
+    .logo-placeholder {
+    display: inline-flex;  
+    align-items: center;  
+    gap: 10px;            
+}
+.logo-placeholder img{
+    height: 40px;      
+    width: auto;      
+    display: block; 
+}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+.topbar-institucional {
+    background: var(--utfsm-azul);
+    border-bottom: 4px solid var(--utfsm-rojo);
+}
+
+.topbar-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo-placeholder {
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.topbar-right a {
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.15s;
+}
 
     /* ── CONTENT ── */
     .content {
