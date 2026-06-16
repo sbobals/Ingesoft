@@ -21,7 +21,13 @@
                 </div>
 
                 <h1 class="login-welcome">Bienvenido/a</h1>
-                <p class="login-subtitle">Portal Autoservicio </p>
+                <p class="login-subtitle">Portal Autoservicio</p>
+
+                <% if (typeof error !== 'undefined') { %>
+                <div class="login-error">
+                    <i class="ti ti-alert-circle"></i> <%= error %>
+                </div>
+                <% } %>
 
                 <form action="/login" method="POST">
 
@@ -58,10 +64,6 @@
 
         <!-- Panel derecho: imagen -->
         <div class="login-image">
-            <!--
-                Reemplaza el src con tu imagen local, por ejemplo:
-                src="/images/campus.jpg"
-            -->
             <img
                 src="https://usm.cl/wp-content/uploads/2021/07/San-Joaquin.jpg"
                 alt="Campus universitario UTFSM"

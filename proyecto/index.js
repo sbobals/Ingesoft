@@ -84,6 +84,7 @@ app.get('/panel', verificarLogin, (req, res) => {
   return res.redirect('/login');
 });
 
+// ── RUTA POST /login ──────────────────────────────────────────
 app.post('/login', async (req, res) => {
 
   try {
@@ -96,16 +97,17 @@ app.post('/login', async (req, res) => {
       AND password = $2
     `, [email, password]);
 
+    // Credenciales incorrectas → volver al login con mensaje de error
     if (result.rows.length === 0) {
-      return res.send('Usuario o contraseña incorrecta');
+      return res.render('login', { error: 'Usuario o contraseña incorrecta' });
     }
 
     const usuario = result.rows[0];
 
     req.session.usuario = {
-      id: usuario.id,
-      nombre: usuario.nombre,
-      rol: usuario.rol,
+      id:            usuario.id,
+      nombre:        usuario.nombre,
+      rol:           usuario.rol,
       estudiante_id: usuario.estudiante_id
     };
 
@@ -115,6 +117,7 @@ app.post('/login', async (req, res) => {
     console.error(err);
     res.status(500).send('Error en login');
   }
+
 });
 app.get('/logout', (req, res) => {
 
