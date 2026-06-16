@@ -119,9 +119,15 @@
     font-weight:600;
     transition:.2s;
 }
+.action-btn:active{
+    transform: translateY(0);
+}
+
 
 .action-btn:hover{
-    background:#00254d;
+    background: #162d6b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
 .secondary{

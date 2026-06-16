@@ -66,8 +66,8 @@
                 Vigencia: <%= beneficio.vigencia.toISOString().split('T')[0] %>
             </p>
 
-            <a href="/beneficios" class="item-arrow student">
-                Simular impacto →
+            <a href="/beneficios" class="btn-simular">
+                Simular impacto 
             </a>
             <div style="margin-top: 30px;">
 
@@ -78,6 +78,11 @@
     </div>
 
 </div>
+ <div class="volver-container">
+      <a href="javascript:history.back()" class="btn-volver">
+          ← Volver atrás
+      </a>
+  </div>
 
 <div class="footer-portal">
     <hr>
