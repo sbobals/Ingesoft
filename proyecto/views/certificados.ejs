@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Solicitud de Certificados</title>
+
+<link rel="stylesheet" href="/CSS/paneles.css">
+<link rel="stylesheet" href="/CSS/certificados.css">
+
+</head>
+<body>
+
+<div class="topbar-institucional">
+    <div class="topbar-content">
+
+        <span class="logo-placeholder">
+            🎓 UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
+        </span>
+
+        <div class="topbar-right">
+            <a href="javascript:history.back()">
+                ← Volver
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<div class="main-container">
+
+    <div class="panel-header">
+
+        <div class="role-icon student">
+            📄
+        </div>
+
+        <div class="panel-header-text">
+
+            <div class="role-tag student">
+                CERTIFICADOS DIGITALES
+            </div>
+
+            <h2>Solicitud de Certificados</h2>
+
+            <p>
+                Seleccione el certificado que desea solicitar.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="form-card">
+
+        <form method="GET" action="/generar-certificado">
+
+            <label>
+                Categoría:
+            </label>
+
+            <select name="categoria">
+
+                <option value="certificados">
+                    Certificados Digitales
+                </option>
+
+            </select>
+
+            <label>
+                Servicio:
+            </label>
+
+            <select name="tipo" required>
+
+                <option value="">
+                    Seleccione un certificado
+                </option>
+
+                <option value="alumno-regular">
+                    Certificado de Alumno Regular
+                </option>
+
+                <option value="arancel-matricula">
+                    Certificado de Arancel y Matrícula
+                </option>
+
+                <option value="seguro-practica">
+                    Seguro de Práctica
+                </option>
+
+            </select>
+
+            <button type="submit">
+                Continuar
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<div class="footer-portal">
+    <hr>
+    <p>© Universidad Técnica Federico Santa María</p>
+</div>
+
+</body>
+</html>

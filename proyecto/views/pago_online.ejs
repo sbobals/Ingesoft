@@ -1,0 +1,83 @@
+<h2>Pago en Línea</h2>
+
+<form action="/pagar" method="POST">
+
+<table>
+
+<tr>
+    <th>Seleccionar</th>
+    <th>Concepto</th>
+    <th>Monto</th>
+    <th>Vencimiento</th>
+</tr>
+
+<% deudas.forEach(d => { %>
+
+<tr>
+
+<td>
+<input
+type="checkbox"
+name="deudas"
+value="<%= d.id %>"
+data-monto="<%= d.monto %>"
+class="deuda"
+>
+</td>
+
+<td><%= d.descripcion %></td>
+
+<td>$<%= Number(d.monto).toLocaleString('es-CL') %></td>
+
+<td><%= d.fecha_vencimiento %></td>
+
+</tr>
+
+<% }) %>
+
+</table>
+
+<div class="resumen-pago">
+
+<h3>
+Total a pagar:
+<span id="total">$0</span>
+</h3>
+s
+<button type="submit">
+💳 Simular Pago
+</button>
+
+</div>
+
+</form>
+<script>
+
+const checks =
+document.querySelectorAll('.deuda');
+
+const total =
+document.getElementById('total');
+
+checks.forEach(c => {
+
+    c.addEventListener('change', ()=>{
+
+        let suma = 0;
+
+        checks.forEach(d => {
+
+            if(d.checked){
+                suma += Number(d.dataset.monto);
+            }
+
+        });
+
+        total.innerText =
+        '$' + suma.toLocaleString('es-CL');
+
+    });
+
+});
+
+</script>

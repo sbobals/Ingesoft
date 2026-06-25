@@ -451,8 +451,82 @@ const COLORS = {
   white:        '#FFFFFF',
 };
 /*=================================
-    RESUMEN ESTUDIANTE
+    PAGO EN LINEA
 ===================================*/
+app.get('/pago_online',
+  verificarLogin,
+  verificarRol('estudiante'),
+  async (req,res) => {
+    const estudianteId =
+      req.session.usuario.estudiante_id;
+
+    const deudas = await pool.query(`
+      SELECT *
+      FROM deudas
+      WHERE estudiante_id = $1
+      AND estado = 'pendiente'
+    `,[estudianteId]);
+
+    res.render('pago_online',{
+      deudas: deudas.rows
+    });
+
+});
+app.post('/pagar',
+verificarRol('estudiante'),
+async (req,res)=>{
+
+    let ids = req.body.deudas;
+
+    if(!ids){
+        return res.redirect('/pago_online');
+    }
+
+    if(!Array.isArray(ids)){
+        ids = [ids];
+    }
+
+    await pool.query(`
+      UPDATE deudas
+      SET estado = 'pagada'
+      WHERE id = ANY($1)
+    `,[ids]);
+
+    res.redirect('/deudas');
+
+});
+/*=================================
+    CERTIFICADOS
+===================================*/
+app.get('/certificados',
+  verificarRol('estudiante'),
+  (req,res) => {
+
+    res.render('certificados');
+
+});
+app.get('/generar-certificado',
+verificarRol('estudiante'),
+(req,res)=>{
+
+    const tipo = req.query.tipo;
+
+    switch(tipo){
+
+        case 'alumno-regular':
+            return res.redirect('/certificado/alumno-regular');
+
+        case 'arancel-matricula':
+            return res.redirect('/certificado/arancel-matricula');
+
+        case 'seguro-practica':
+            return res.redirect('/certificado/seguro-practica');
+
+        default:
+            return res.redirect('/certificados');
+    }
+
+});
 /*=================================
     RESUMEN ESTUDIANTE
 ===================================*/
