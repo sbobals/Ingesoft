@@ -132,14 +132,22 @@ app.get('/perfil', verificarLogin, async (req, res) => {
 
         const usuario = result.rows[0];
 
-        // Nos aseguramos de enviar el rol a la vista
         usuario.rol = req.session.usuario.rol;
 
-        res.render('perfil', { usuario });
+        // Recuperar el mensaje y eliminarlo de la sesión
+        const mensaje = req.session.mensaje;
+        delete req.session.mensaje;
+
+        res.render('perfil', {
+            usuario,
+            mensaje
+        });
 
     } catch (err) {
+
         console.error(err);
         res.status(500).send('Error');
+
     }
 
 });
@@ -150,8 +158,6 @@ app.post('/perfil', verificarLogin, async (req, res) => {
         const { nombre, email, password } = req.body;
 
         if (password && password.trim() !== "") {
-
-            // El usuario escribió una nueva contraseña
 
             await pool.query(`
                 UPDATE usuarios
@@ -167,8 +173,6 @@ app.post('/perfil', verificarLogin, async (req, res) => {
             ]);
 
         } else {
-
-            // Mantener la contraseña actual
 
             await pool.query(`
                 UPDATE usuarios
@@ -186,12 +190,25 @@ app.post('/perfil', verificarLogin, async (req, res) => {
         req.session.usuario.nombre = nombre;
         req.session.usuario.email = email;
 
+        // Mensaje de éxito
+        req.session.mensaje = {
+            tipo: "success",
+            texto: "✅ Perfil actualizado correctamente."
+        };
+
         res.redirect('/perfil');
 
     } catch (err) {
 
         console.error(err);
-        res.status(500).send('Error');
+
+        // Mensaje de error
+        req.session.mensaje = {
+            tipo: "error",
+            texto: "❌ Ocurrió un error al actualizar el perfil."
+        };
+
+        res.redirect('/perfil');
 
     }
 

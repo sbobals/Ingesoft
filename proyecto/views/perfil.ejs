@@ -44,7 +44,17 @@
     </div>
 
 </div>
+<div class="perfil-body">
 
+    <% if (mensaje) { %>
+
+        <div class="alerta <%= mensaje.tipo %>">
+            <%= mensaje.texto %>
+        </div>
+
+    <% } %>
+
+    <form action="/perfil" method="POST">
 <div class="perfil-container">
 
     <div class="perfil-card">
