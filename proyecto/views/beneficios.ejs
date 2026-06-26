@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador de Beneficios</title>
+  <title>Mis Beneficios Asignados</title>
   <link rel="stylesheet" href="CSS/simulador.css">
 </head>
 <body>
@@ -21,18 +21,17 @@
 </div>
 
   <div class="content">
-    <!-- HEADER L -->
     <div class="panel-header">
-      <div class="role-icon">📋</div>
+      <div class="role-icon">🎓</div>
       <div class="panel-header-text">
-        <h2>Simulador de Beneficios</h2>
-        <p>Visualiza las diferentes becas en tu arancel</p>
+        <h2>Simulador de Beneficios Asignados</h2>
+        <p>Visualiza cómo tus becas y beneficios reducen tu arancel</p>
       </div>
     </div>
     
     <div class="filter-bar">
-      <label style="font-weight: 600; color: #111827; font-size: 14px;">Carrera a simular:</label>
-      <select id="carrera-select" onchange="actualizarSimulacion()">
+      <label style="font-weight: 600; color: #111827; font-size: 14px;">Arancel a evaluar:</label>
+      <select id="carrera-select" onchange="actualizarValores()">
         <% carreras.forEach(c => { %>
           <option value="<%= c.arancel %>"><%= c.nombre %> - $<%= Number(c.arancel).toLocaleString('es-CL') %></option>
         <% }) %>
@@ -45,7 +44,7 @@
         <div class="metric-value" id="display-base">$0</div>
       </div>
       <div class="metric-card purple">
-        <div class="metric-label">Ahorro Simulado</div>
+        <div class="metric-label">Descuento por Beneficios</div>
         <div class="metric-value" id="display-descuento" style="color: #7C3AED;">$0</div>
       </div>
       <div class="metric-card success">
@@ -54,28 +53,30 @@
       </div>
     </div>
 
-    <h2 style="margin-bottom: 1rem; font-size: 16px;">Selecciona beneficios para evaluar financiamiento</h2>
+    <h2 style="margin-bottom: 1rem; font-size: 16px;">Tus beneficios actuales registrados en el sistema:</h2>
 
     <div class="grid">
       <% if (beneficios && beneficios.length > 0) { %>
         <% beneficios.forEach(b => { %>
-          <label class="card">
-            <div class="card-header">
-              <input type="checkbox" class="beneficio-chk" value="<%= b.cobertura %>" onchange="actualizarSimulacion()">
+          <div class="card" style="cursor: default; border-color: #D1D5DB;"> <div class="card-header">
+              <span style="margin-right: 10px; font-size: 18px;">✅</span>
               <span class="card-nombre"><%= b.tipo %></span>
+              <input type="hidden" class="beneficio-valor" value="<%= b.cobertura %>">
             </div>
             <div class="card-body">
               <div class="card-row">
                 <span style="color:#6B7280;">Cobertura:</span>
-                <span style="font-weight:600;">$<%= Number(b.cobertura).toLocaleString('es-CL') %></span>
+                <span style="font-weight:600; color: #7C3AED;">$<%= Number(b.cobertura).toLocaleString('es-CL') %></span>
               </div>
               <div class="card-row">
                 <span style="color:#6B7280;">Vigencia hasta:</span>
                 <span style="font-weight:600;"><%= b.vigencia %></span>
               </div>
             </div>
-          </label>
+          </div>
         <% }) %>
+      <% } else { %>
+        <p style="color: #6B7280; font-style: italic;">No tienes beneficios asignados actualmente.</p>
       <% } %>
     </div>
   </div>
@@ -84,19 +85,20 @@
           ← Volver atrás
       </a>
   </div>
+  
   <script>
-    function actualizarSimulacion() {
+    function actualizarValores() {
       // 1. Obtener el arancel base del selector
       const selector = document.getElementById('carrera-select');
       const arancelBase = parseInt(selector.value);
       
-      // 2. Sumar la cobertura de los beneficios marcados
+      // 2. Sumar automáticamente TODOS los beneficios asignados que aparecen en pantalla
       let ahorro = 0;
-      document.querySelectorAll('.beneficio-chk:checked').forEach(chk => {
-        ahorro += parseInt(chk.value);
+      document.querySelectorAll('.beneficio-valor').forEach(inputHidden => {
+        ahorro += parseInt(inputHidden.value);
       });
 
-      // 3. Calcular el costo final proyectado
+      // 3. Calcular el costo final proyectado (evitando que dé números negativos si la beca es mayor al arancel)
       const proyectado = Math.max(0, arancelBase - ahorro);
 
       // 4. Actualizar la pantalla con formato de pesos
@@ -105,8 +107,8 @@
       document.getElementById('display-proyectado').innerText = '$' + proyectado.toLocaleString('es-CL');
     }
 
-    // Ejecutamos la función al cargar la página para que inicie con los valores correctos
-    window.onload = actualizarSimulacion;
+    // Ejecutamos la función apenas cargue la página para hacer el cálculo inmediato
+    window.onload = actualizarValores;
   </script>
 </body>
 </html>
