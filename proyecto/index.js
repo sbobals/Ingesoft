@@ -404,8 +404,11 @@ app.get(
 /* =========================
    BENEFICIOS
 ========================= */
-app.get('/beneficios', async (req, res) => {
+app.get('/beneficios', verificarRol('estudiante'), async (req, res) => {
   try {
+    // 1. Obtenemos el ID de la estudiante conectada
+    const estudianteId = req.session.usuario.estudiante_id;
+
     const carreras = [
       { nombre: "Ingeniería Civil Informática", arancel: 7000000 },
       { nombre: "Ingeniería Comercial", arancel: 6800000 },
@@ -413,6 +416,7 @@ app.get('/beneficios', async (req, res) => {
       { nombre: "Técnico Universitario en Informática", arancel: 4500000 }
     ];
 
+    // 2. Agregamos el WHERE para filtrar solo sus beneficios
     const result = await pool.query(`
       SELECT
         beneficios.id,
@@ -422,7 +426,8 @@ app.get('/beneficios', async (req, res) => {
         TO_CHAR(beneficios.vigencia, 'YYYY-MM-DD') AS vigencia
       FROM beneficios
       JOIN estudiantes ON beneficios.estudiante_id = estudiantes.id
-    `);
+      WHERE beneficios.estudiante_id = $1
+    `, [estudianteId]);
 
     res.render('beneficios', { carreras: carreras, beneficios: result.rows });
 
