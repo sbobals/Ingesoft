@@ -127,7 +127,105 @@
                 <% } %>
             </p>
 
+            <!-- Barra de progreso de pago -->
+            <%
+                const deudaTotal = Number(estudiante?.deuda || 0);
+                const cubierto = Number(estudiante?.pagos || 0) + Number(estudiante?.beneficios || 0);
+
+                const porcentaje = deudaTotal > 0
+                    ? Math.min(100, Math.round((cubierto / deudaTotal) * 100))
+                    : 100;
+            %>
+            <div class="progreso-pago">
+                <div class="progreso-info">
+                    <span>Cobertura de tu arancel</span>
+                    <span class="progreso-porcentaje"><%= porcentaje %>%</span>
+                </div>
+
+                <div class="progreso-barra">
+                    <div class="progreso-relleno" data-porcentaje="<%= porcentaje %>"></div>
+                </div>
+            
+                <div class="progreso-detalle">
+                    <span>💰 Pagado + 🎓 Beneficios: $<%= cubierto.toLocaleString('es-CL') %></span>
+                    <span>Total adeudado: $<%= deudaTotal.toLocaleString('es-CL') %></span>
+                </div>
+            </div>
+
+            <% if (Number(estudiante.saldo_pendiente) > 0) { %>
+                <a href="/pago_online" class="btn-pagar-ahora">
+                    💳 Pagar saldo pendiente
+                </a>
+            <% } %>
+
         </div>
+
+        <!-- ═══════════════════════════════════════════════
+             DETALLE DE MIS DEUDAS
+        ════════════════════════════════════════════════ -->
+        <div class="historial-section">
+
+            <div class="historial-header">
+                <h3 class="historial-titulo">
+                    📋 Mis Deudas
+                </h3>
+            </div>
+
+            <% if (deudas.length === 0) { %>
+
+                <div class="historial-vacio">
+                    <span class="vacio-icono">✅</span>
+                    <p>No tienes deudas registradas.</p>
+                </div>
+
+            <% } else { %>
+
+                <div class="tabla-wrapper">
+                    <table class="tabla-pagos">
+
+                        <thead>
+                            <tr>
+                                <th>N° Deuda</th>
+                                <th>Monto</th>
+                                <th>Vencimiento</th>
+                                <th>Estado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <% deudas.forEach(function(d) { %>
+                            <tr>
+                                <td class="pago-id">#<%= d.id %></td>
+                                <td class="monto-celda">
+                                    $<%= Number(d.monto).toLocaleString('es-CL') %>
+                                </td>
+                                <td>
+                                    <%= d.fecha_vencimiento
+                                        ? new Date(d.fecha_vencimiento).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                                        : '—' %>
+                                </td>
+                                <td>
+                                    <span class="badge-estado badge-<%= (d.estado || 'sin-estado').toLowerCase().replace(/\s+/g, '-') %>">
+                                        <%= d.estado || '—' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <% if (d.estado === 'pendiente') { %>
+                                        <a href="/pago_online" class="link-pagar">Pagar →</a>
+                                    <% } %>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+
+                    </table>
+                </div>
+
+            <% } %>
+
+        </div>
+        <!-- FIN DETALLE DEUDAS -->
 
         <!-- ═══════════════════════════════════════════════
              HISTORIAL DE PAGOS POR PERIODO (Criterio 2)
@@ -309,4 +407,12 @@
     </div>
 
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".progreso-relleno").forEach(el => {
+            const p = el.dataset.porcentaje || 0;
+            el.style.width = p + "%";
+        });
+    });
+</script>
 </html>

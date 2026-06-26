@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprobante de Pago — UTFSM</title>
+    <link rel="stylesheet" href="/CSS/paneles.css">
+    <style>
+        .comprobante-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            max-width: 620px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .comprobante-header {
+            background: var(--color-student-soft);
+            padding: 32px 28px 24px;
+            text-align: center;
+        }
+
+        .check-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--color-student);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 14px;
+        }
+
+        .comprobante-header h2 {
+            font-size: 19px;
+            color: var(--color-student);
+            margin-bottom: 4px;
+        }
+
+        .comprobante-header p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .comprobante-body {
+            padding: 26px 28px;
+        }
+
+        .linea {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .linea span.label {
+            color: var(--text-secondary);
+        }
+
+        .linea span.valor {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .detalle-titulo {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+            margin: 22px 0 10px;
+        }
+
+        .detalle-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13.5px;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .total-final {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 2px solid var(--border);
+        }
+
+        .total-final span.label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .total-final span.valor {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--color-student);
+        }
+
+        .acciones-comprobante {
+            display: flex;
+            gap: 12px;
+            margin-top: 26px;
+        }
+
+        .acciones-comprobante a, .acciones-comprobante button {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primario {
+            background: var(--utfsm-azul);
+            color: #fff;
+        }
+
+        .btn-secundario {
+            background: var(--bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border) !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="topbar-institucional">
+        <div class="topbar-content">
+            <span class="logo-placeholder"><img src="/logo.png" alt="Logo USM"> UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA</span>
+            <div class="topbar-right">
+                <a href="/estudiante">⬅ Panel</a> &nbsp;|&nbsp;
+                <a href="/logout">🔒 Salir</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+
+        <div class="comprobante-card">
+
+            <div class="comprobante-header">
+                <div class="check-icon">✓</div>
+                <h2>Pago realizado con éxito</h2>
+                <p>Comprobante generado automáticamente (simulación)</p>
+            </div>
+
+            <div class="comprobante-body">
+
+                <div class="linea">
+                    <span class="label">Folio de pago</span>
+                    <span class="valor">#<%= String(pago.id).padStart(6, '0') %></span>
+                </div>
+
+                <div class="linea">
+                    <span class="label">Estudiante</span>
+                    <span class="valor"><%= pago.nombre %></span>
+                </div>
+
+                <div class="linea">
+                    <span class="label">Fecha</span>
+                    <span class="valor"><%= new Date(pago.fecha).toLocaleDateString('es-CL') %></span>
+                </div>
+
+                <div class="linea">
+                    <span class="label">Estado</span>
+                    <span class="valor" style="color: var(--color-student);">Completado</span>
+                </div>
+
+                <div class="detalle-titulo">Deudas pagadas en esta transacción</div>
+
+                <% detalle.forEach(d => { %>
+                    <div class="detalle-item">
+                        <span>Deuda #<%= d.deuda_id %></span>
+                        <span>$<%= Number(d.monto_aplicado).toLocaleString('es-CL') %></span>
+                    </div>
+                <% }) %>
+
+                <div class="total-final">
+                    <span class="label">Total pagado</span>
+                    <span class="valor">$<%= Number(pago.monto).toLocaleString('es-CL') %></span>
+                </div>
+
+                <div class="acciones-comprobante">
+                    <a href="/estudiante" class="btn-secundario">Volver al panel</a>
+                    <a href="/pago_online" class="btn-primario">Ver más deudas</a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer-portal">
+        <hr>
+        <p>© Universidad Técnica Federico Santa María</p>
+    </div>
+
+</body>
+</html>

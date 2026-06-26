@@ -300,7 +300,8 @@
 
 /* Estado: pagado / completado */
 .badge-pagado,
-.badge-completado {
+.badge-completado,
+.badge-pagada {
     background: #dcfce7;
     color: #15803d;
 }
@@ -388,6 +389,88 @@
 .vacio-sugerencia {
     color: #9ca3af;
     font-size: 0.8rem !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   BARRA DE PROGRESO DE PAGO
+════════════════════════════════════════════════════ */
+.progreso-pago {
+    max-width: 480px;
+    margin: 24px auto 0;
+    text-align: left;
+}
+
+.progreso-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.progreso-porcentaje {
+    color: var(--utfsm-azul);
+    font-weight: 700;
+}
+
+.progreso-barra {
+    width: 100%;
+    height: 12px;
+    background: #E5E7EB;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progreso-relleno {
+    height: 100%;
+    background: linear-gradient(90deg, #1B6B3A, #2f9e57);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+.progreso-detalle {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* ── Botón pagar ahora (destacado en saldo principal) ── */
+.btn-pagar-ahora {
+    display: inline-block;
+    margin-top: 22px;
+    background: var(--utfsm-rojo);
+    color: #fff;
+    text-decoration: none;
+    padding: 13px 28px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(200, 16, 46, 0.25);
+}
+
+.btn-pagar-ahora:hover {
+    background: #a30d26;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(200, 16, 46, 0.3);
+}
+
+/* ── Link pagar en tabla de deudas ── */
+.link-pagar {
+    color: var(--utfsm-rojo);
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.link-pagar:hover {
+    text-decoration: underline;
 }
 
 /* ── Responsivo ── */

@@ -1,83 +1,594 @@
-<h2>Pago en Línea</h2>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago en Línea — UTFSM</title>
+    <link rel="stylesheet" href="/CSS/paneles.css">
+    <style>
+        .pago-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
 
-<form action="/pagar" method="POST">
+        @media (max-width: 860px) {
+            .pago-grid { grid-template-columns: 1fr; }
+        }
 
-<table>
+        .panel-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
 
-<tr>
-    <th>Seleccionar</th>
-    <th>Concepto</th>
-    <th>Monto</th>
-    <th>Vencimiento</th>
-</tr>
+        .panel-card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
 
-<% deudas.forEach(d => { %>
+        table.tabla-deudas {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
 
-<tr>
+        table.tabla-deudas th {
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            padding: 8px 6px;
+            border-bottom: 2px solid var(--border);
+        }
 
-<td>
-<input
-type="checkbox"
-name="deudas"
-value="<%= d.id %>"
-data-monto="<%= d.monto %>"
-class="deuda"
->
-</td>
+        table.tabla-deudas td {
+            padding: 12px 6px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+        }
 
-<td><%= d.descripcion %></td>
+        table.tabla-deudas tr.fila-deuda:hover {
+            background: var(--bg);
+        }
 
-<td>$<%= Number(d.monto).toLocaleString('es-CL') %></td>
+        input[type="checkbox"].chk-deuda {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--color-student);
+            cursor: pointer;
+        }
 
-<td><%= d.fecha_vencimiento %></td>
+        .sin-deudas {
+            padding: 30px 10px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
 
-</tr>
+        .resumen-pago {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-<% }) %>
+        .resumen-pago h4 {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
 
-</table>
+        #total {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--utfsm-azul);
+        }
 
-<div class="resumen-pago">
+        /* — Tarjeta visual simulada — */
+        .tarjeta-visual {
+            border-radius: 16px;
+            padding: 22px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--utfsm-azul) 0%, #00254d 100%);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            min-height: 150px;
+        }
 
-<h3>
-Total a pagar:
-<span id="total">$0</span>
-</h3>
-s
-<button type="submit">
-💳 Simular Pago
-</button>
+        .tarjeta-visual::after {
+            content: "";
+            position: absolute;
+            right: -40px;
+            top: -40px;
+            width: 160px;
+            height: 160px;
+            background: var(--utfsm-rojo);
+            opacity: 0.25;
+            border-radius: 50%;
+        }
 
-</div>
+        .tarjeta-chip {
+            width: 38px;
+            height: 28px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #d9c46a, #b9982f);
+            margin-bottom: 22px;
+        }
 
-</form>
-<script>
+        .tarjeta-numero {
+            font-size: 19px;
+            letter-spacing: 3px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 18px;
+            min-height: 24px;
+        }
 
-const checks =
-document.querySelectorAll('.deuda');
+        .tarjeta-bottom {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
 
-const total =
-document.getElementById('total');
+        .tarjeta-bottom span { opacity: 0.75; font-size: 10px; display: block; margin-bottom: 3px; }
+        .tarjeta-bottom strong { font-size: 13px; letter-spacing: 0.5px; }
 
-checks.forEach(c => {
+        .campo {
+            margin-bottom: 14px;
+        }
 
-    c.addEventListener('change', ()=>{
+        .campo label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
 
-        let suma = 0;
+        .campo input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--bg);
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.15s;
+        }
 
-        checks.forEach(d => {
+        .campo input:focus {
+            border-color: var(--utfsm-azul);
+        }
 
-            if(d.checked){
-                suma += Number(d.dataset.monto);
+        .fila-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .nota-seguridad {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 14px 0 18px;
+        }
+
+        .btn-pagar {
+            width: 100%;
+            background: var(--color-student);
+            color: #fff;
+            border: none;
+            padding: 13px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .btn-pagar:hover:not(:disabled) {
+            background: #145c30;
+            transform: translateY(-2px);
+        }
+
+        .btn-pagar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .alerta-error {
+            background: #FEF0EE;
+            color: var(--color-admin);
+            border: 1px solid #F8C9C0;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 13.5px;
+            margin-bottom: 20px;
+        }
+
+        .tarjetas-prueba {
+            margin-top: 6px;
+            font-size: 11.5px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* — Selector de método de pago — */
+        .metodos-pago {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .metodos-pago { grid-template-columns: 1fr; }
+        }
+
+        .metodo-opcion {
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: var(--bg);
+        }
+
+        .metodo-opcion input {
+            display: none;
+        }
+
+        .metodo-opcion .metodo-icono {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .metodo-opcion .metodo-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .metodo-opcion.activo {
+            border-color: var(--color-student);
+            background: var(--color-student-soft);
+            box-shadow: 0 2px 8px rgba(27, 107, 58, 0.12);
+        }
+
+        .metodo-opcion.activo .metodo-label {
+            color: var(--color-student);
+        }
+
+        .bloque-metodo { display: none; }
+        .bloque-metodo.visible { display: block; }
+
+        .info-transferencia {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .info-transferencia strong {
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="topbar-institucional">
+        <div class="topbar-content">
+            <span class="logo-placeholder"><img src="/logo.png" alt="Logo USM"> UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA</span>
+            <div class="topbar-right">
+                <a href="/estudiante">⬅ Panel</a> &nbsp;|&nbsp;
+                <a href="/logout">🔒 Salir</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+
+        <div class="panel-header">
+            <div class="role-icon student">💳</div>
+            <div class="panel-header-text">
+                <div class="role-tag student">● Pago en línea</div>
+                <h2>Paga tus deudas pendientes</h2>
+                <p>Selecciona las deudas que deseas pagar e ingresa los datos de tu tarjeta (simulación).</p>
+            </div>
+        </div>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alerta-error">⚠ <%= error %></div>
+        <% } %>
+
+        <form action="/pagar" method="POST" id="form-pago">
+
+            <div class="pago-grid">
+
+                <!-- ── Columna izquierda: deudas ── -->
+                <div class="panel-card">
+                    <h3>Deudas pendientes</h3>
+
+                    <% if (deudas.length === 0) { %>
+                        <div class="sin-deudas">
+                            ✅ No tienes deudas pendientes por pagar.
+                        </div>
+                    <% } else { %>
+                        <table class="tabla-deudas">
+                            <tr>
+                                <th></th>
+                                <th>Concepto</th>
+                                <th>Monto</th>
+                                <th>Vencimiento</th>
+                            </tr>
+
+                            <% deudas.forEach(d => { %>
+                                <tr class="fila-deuda">
+                                    <td>
+                                        <input
+                                            type="checkbox"
+                                            name="deudas"
+                                            value="<%= d.id %>"
+                                            data-monto="<%= d.monto %>"
+                                            class="chk-deuda"
+                                            <% if (typeof seleccionadas !== 'undefined' && seleccionadas.map(String).includes(String(d.id))) { %>checked<% } %>
+                                        >
+                                    </td>
+                                    <td><%= d.descripcion || ('Deuda #' + d.id) %></td>
+                                    <td>$<%= Number(d.monto).toLocaleString('es-CL') %></td>
+                                    <td><%= d.fecha_vencimiento ? new Date(d.fecha_vencimiento).toLocaleDateString('es-CL') : '—' %></td>
+                                </tr>
+                            <% }) %>
+                        </table>
+
+                        <div class="resumen-pago">
+                            <h4>Total a pagar</h4>
+                            <span id="total">$0</span>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- ── Columna derecha: método de pago ── -->
+                <% if (deudas.length > 0) { %>
+                <div class="panel-card">
+                    <h3>Método de pago</h3>
+
+                    <div class="metodos-pago">
+                        <label class="metodo-opcion activo" data-metodo="tarjeta_credito">
+                            <input type="radio" name="metodo_pago" value="tarjeta_credito" checked>
+                            <div class="metodo-icono">💳</div>
+                            <div class="metodo-label">Tarjeta de Crédito</div>
+                        </label>
+
+                        <label class="metodo-opcion" data-metodo="tarjeta_debito">
+                            <input type="radio" name="metodo_pago" value="tarjeta_debito">
+                            <div class="metodo-icono">💳</div>
+                            <div class="metodo-label">Tarjeta de Débito</div>
+                        </label>
+
+                        <label class="metodo-opcion" data-metodo="transferencia">
+                            <input type="radio" name="metodo_pago" value="transferencia">
+                            <div class="metodo-icono">🏦</div>
+                            <div class="metodo-label">Transferencia</div>
+                        </label>
+                    </div>
+
+                    <!-- — Bloque: tarjeta de crédito / débito — -->
+                    <div class="bloque-metodo visible" data-bloque="tarjeta">
+
+                        <div class="tarjeta-visual">
+                            <div class="tarjeta-chip"></div>
+                            <div class="tarjeta-numero" id="preview-numero">•••• •••• •••• ••••</div>
+                            <div class="tarjeta-bottom">
+                                <div>
+                                    <span>Titular</span>
+                                    <strong id="preview-titular">NOMBRE APELLIDO</strong>
+                                </div>
+                                <div>
+                                    <span>Vence</span>
+                                    <strong id="preview-vencimiento">MM/AA</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campo">
+                            <label for="titular">Titular de la tarjeta</label>
+                            <input type="text" id="titular" name="titular" placeholder="Nombre como aparece en la tarjeta" autocomplete="cc-name">
+                        </div>
+
+                        <div class="campo">
+                            <label for="numero_tarjeta">Número de tarjeta</label>
+                            <input type="text" id="numero_tarjeta" name="numero_tarjeta" placeholder="0000 0000 0000 0000" inputmode="numeric" maxlength="19" autocomplete="cc-number">
+                        </div>
+
+                        <div class="fila-2">
+                            <div class="campo">
+                                <label for="vencimiento">Vencimiento (MM/AA)</label>
+                                <input type="text" id="vencimiento" name="vencimiento" placeholder="MM/AA" maxlength="5" autocomplete="cc-exp">
+                            </div>
+                            <div class="campo">
+                                <label for="cvv">CVV</label>
+                                <input type="password" id="cvv" name="cvv" placeholder="123" inputmode="numeric" maxlength="4" autocomplete="cc-csc">
+                            </div>
+                        </div>
+
+                        <div class="tarjetas-prueba">
+                            Tip: cualquier tarjeta válida (Luhn) funciona como <strong>aprobada</strong>.
+                            Una tarjeta terminada en <strong>0000</strong> simula un <strong>rechazo</strong>.
+                        </div>
+                    </div>
+
+                    <!-- — Bloque: transferencia bancaria — -->
+                    <div class="bloque-metodo" data-bloque="transferencia">
+
+                        <div class="info-transferencia">
+                            🏦 Se simulará una transferencia desde tu cuenta hacia la
+                            <strong>Cuenta Corriente UTFSM N° 00-123-456-7</strong>, Banco Estado,
+                            por el monto total seleccionado.
+                        </div>
+
+                        <div class="campo">
+                            <label for="banco_origen">Banco de origen</label>
+                            <select id="banco_origen" name="banco_origen">
+                                <option value="">Selecciona tu banco</option>
+                                <option value="Banco Estado">Banco Estado</option>
+                                <option value="Banco de Chile">Banco de Chile</option>
+                                <option value="BancoSantander">Banco Santander</option>
+                                <option value="BCI">BCI</option>
+                                <option value="Scotiabank">Scotiabank</option>
+                            </select>
+                        </div>
+
+                        <div class="campo">
+                            <label for="cuenta_origen">Número de cuenta</label>
+                            <input type="text" id="cuenta_origen" name="cuenta_origen" placeholder="Ej: 123456789" inputmode="numeric" maxlength="20">
+                        </div>
+
+                        <div class="tarjetas-prueba">
+                            Tip: cualquier cuenta válida funciona como <strong>aprobada</strong>.
+                            Una cuenta terminada en <strong>0000</strong> simula un <strong>rechazo</strong>.
+                        </div>
+                    </div>
+
+                    <div class="nota-seguridad">
+                        🔒 Esta es una pasarela de pago <strong>simulada</strong> con fines académicos. No se procesan transacciones reales ni se almacenan datos sensibles.
+                    </div>
+
+                    <button type="submit" class="btn-pagar" id="btn-pagar" disabled>
+                        💳 Pagar ahora
+                    </button>
+                </div>
+                <% } %>
+
+            </div>
+        </form>
+
+    </div>
+
+    <div class="footer-portal">
+        <hr>
+        <p>© Universidad Técnica Federico Santa María</p>
+    </div>
+
+    <script>
+        const checks = document.querySelectorAll('.chk-deuda');
+        const total = document.getElementById('total');
+        const btnPagar = document.getElementById('btn-pagar');
+
+        const inputTitular = document.getElementById('titular');
+        const inputNumero = document.getElementById('numero_tarjeta');
+        const inputVencimiento = document.getElementById('vencimiento');
+
+        function actualizarTotal() {
+            let suma = 0;
+            checks.forEach(c => { if (c.checked) suma += Number(c.dataset.monto); });
+            total.innerText = '$' + suma.toLocaleString('es-CL');
+            validarFormulario();
+        }
+
+        function validarFormulario() {
+            if (!btnPagar) return;
+            const haySeleccion = Array.from(checks).some(c => c.checked);
+            btnPagar.disabled = !haySeleccion;
+        }
+
+        checks.forEach(c => c.addEventListener('change', actualizarTotal));
+        actualizarTotal();
+
+        // — Formateo en vivo del número de tarjeta —
+        if (inputNumero) {
+            inputNumero.addEventListener('input', () => {
+                let v = inputNumero.value.replace(/\D/g, '').slice(0, 19);
+                inputNumero.value = v.replace(/(.{4})/g, '$1 ').trim();
+
+                const oculto = v.padEnd(16, '•');
+                const grupos = oculto.match(/.{1,4}/g) || [];
+                document.getElementById('preview-numero').innerText =
+                    v.length ? grupos.join(' ') : '•••• •••• •••• ••••';
+            });
+        }
+
+        if (inputTitular) {
+            inputTitular.addEventListener('input', () => {
+                document.getElementById('preview-titular').innerText =
+                    inputTitular.value.trim().toUpperCase() || 'NOMBRE APELLIDO';
+            });
+        }
+
+        if (inputVencimiento) {
+            inputVencimiento.addEventListener('input', () => {
+                let v = inputVencimiento.value.replace(/\D/g, '').slice(0, 4);
+                if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+                inputVencimiento.value = v;
+                document.getElementById('preview-vencimiento').innerText = v || 'MM/AA';
+            });
+        }
+
+        // — Selector de método de pago —
+        const opcionesMetodo = document.querySelectorAll('.metodo-opcion');
+        const bloqueTarjeta = document.querySelector('[data-bloque="tarjeta"]');
+        const bloqueTransferencia = document.querySelector('[data-bloque="transferencia"]');
+
+        const camposTarjeta = ['titular', 'numero_tarjeta', 'vencimiento', 'cvv'];
+        const camposTransferencia = ['banco_origen', 'cuenta_origen'];
+
+        function setRequeridos(idsActivos, idsInactivos) {
+            idsActivos.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.setAttribute('required', 'required');
+            });
+            idsInactivos.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.removeAttribute('required');
+            });
+        }
+
+        function mostrarMetodo(metodo) {
+            opcionesMetodo.forEach(op => {
+                op.classList.toggle('activo', op.dataset.metodo === metodo);
+            });
+
+            if (metodo === 'transferencia') {
+                bloqueTarjeta && bloqueTarjeta.classList.remove('visible');
+                bloqueTransferencia && bloqueTransferencia.classList.add('visible');
+                setRequeridos(camposTransferencia, camposTarjeta);
+            } else {
+                bloqueTransferencia && bloqueTransferencia.classList.remove('visible');
+                bloqueTarjeta && bloqueTarjeta.classList.add('visible');
+                setRequeridos(camposTarjeta, camposTransferencia);
             }
+        }
 
+        opcionesMetodo.forEach(op => {
+            op.addEventListener('click', () => {
+                const radio = op.querySelector('input[type="radio"]');
+                if (radio) radio.checked = true;
+                mostrarMetodo(op.dataset.metodo);
+            });
         });
 
-        total.innerText =
-        '$' + suma.toLocaleString('es-CL');
+        // Estado inicial (tarjeta de crédito)
+        mostrarMetodo('tarjeta_credito');
+    </script>
 
-    });
-
-});
-
-</script>
+</body>
+</html>

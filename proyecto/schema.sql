@@ -41,7 +41,8 @@ CREATE TABLE pagos (
     estudiante_id INT REFERENCES estudiantes(id),
     monto INT NOT NULL,
     fecha DATE,
-    estado VARCHAR(50)
+    estado VARCHAR(50),
+    metodo_pago VARCHAR(30) DEFAULT 'tarjeta_credito'
 );
 
 CREATE TABLE detalle_pagos (

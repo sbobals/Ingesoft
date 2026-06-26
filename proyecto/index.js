@@ -468,32 +468,221 @@ app.get('/pago_online',
     `,[estudianteId]);
 
     res.render('pago_online',{
-      deudas: deudas.rows
+      deudas: deudas.rows,
+      error: null,
+      seleccionadas: []
     });
 
 });
+
+/* — Helpers de validación de tarjeta (simulación) — */
+function luhnValido(numero) {
+  const digitos = (numero || '').replace(/\s+/g, '');
+  if (!/^\d{13,19}$/.test(digitos)) return false;
+
+  let suma = 0;
+  let alterna = false;
+
+  for (let i = digitos.length - 1; i >= 0; i--) {
+    let n = parseInt(digitos[i], 10);
+    if (alterna) {
+      n *= 2;
+      if (n > 9) n -= 9;
+    }
+    suma += n;
+    alterna = !alterna;
+  }
+
+  return suma % 10 === 0;
+}
+
+function vencimientoValido(mmYY) {
+  const m = /^(\d{2})\/(\d{2})$/.exec((mmYY || '').trim());
+  if (!m) return false;
+
+  const mes = Number(m[1]);
+  const anio = 2000 + Number(m[2]);
+  if (mes < 1 || mes > 12) return false;
+
+  const hoy = new Date();
+  const finMes = new Date(anio, mes, 0); // último día del mes de vencimiento
+
+  return finMes >= new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+}
+
 app.post('/pagar',
-verificarRol('estudiante'),
-async (req,res)=>{
+  verificarLogin,
+  verificarRol('estudiante'),
+  async (req, res) => {
+
+    const estudianteId = req.session.usuario.estudiante_id;
 
     let ids = req.body.deudas;
+    const {
+      metodo_pago,
+      titular, numero_tarjeta, vencimiento, cvv,
+      banco_origen, cuenta_origen
+    } = req.body;
 
-    if(!ids){
-        return res.redirect('/pago_online');
+    const METODOS_VALIDOS = ['tarjeta_credito', 'tarjeta_debito', 'transferencia'];
+
+    const recargarConError = async (mensaje) => {
+      const deudas = await pool.query(`
+        SELECT * FROM deudas
+        WHERE estudiante_id = $1 AND estado = 'pendiente'
+      `, [estudianteId]);
+
+      return res.render('pago_online', {
+        deudas: deudas.rows,
+        error: mensaje,
+        seleccionadas: ids ? (Array.isArray(ids) ? ids : [ids]) : []
+      });
+    };
+
+    // ── Validar selección de deudas ──────────────────────────────
+    if (!ids) {
+      return recargarConError('Debes seleccionar al menos una deuda para pagar.');
+    }
+    if (!Array.isArray(ids)) ids = [ids];
+    ids = ids.map(Number).filter(n => !Number.isNaN(n));
+    if (ids.length === 0) {
+      return recargarConError('Debes seleccionar al menos una deuda para pagar.');
     }
 
-    if(!Array.isArray(ids)){
-        ids = [ids];
+    // ── Validar método de pago ───────────────────────────────────
+    if (!METODOS_VALIDOS.includes(metodo_pago)) {
+      return recargarConError('Selecciona un método de pago válido.');
     }
 
-    await pool.query(`
-      UPDATE deudas
-      SET estado = 'pagada'
-      WHERE id = ANY($1)
-    `,[ids]);
+    let rechazada = false;
 
-    res.redirect('/deudas');
+    if (metodo_pago === 'tarjeta_credito' || metodo_pago === 'tarjeta_debito') {
 
+      // ── Validar datos de la tarjeta (simulación) ─────────────────
+      if (!titular || titular.trim().length < 3) {
+        return recargarConError('Ingresa el nombre del titular de la tarjeta.');
+      }
+      if (!luhnValido(numero_tarjeta)) {
+        return recargarConError('El número de tarjeta ingresado no es válido.');
+      }
+      if (!vencimientoValido(vencimiento)) {
+        return recargarConError('La fecha de vencimiento de la tarjeta no es válida.');
+      }
+      if (!/^\d{3,4}$/.test((cvv || '').trim())) {
+        return recargarConError('El código de seguridad (CVV) no es válido.');
+      }
+
+      // ── Simulación de rechazo: tarjetas de prueba terminadas en 0000 ──
+      rechazada = numero_tarjeta.replace(/\s+/g, '').endsWith('0000');
+
+    } else if (metodo_pago === 'transferencia') {
+
+      // ── Validar datos de transferencia (simulación) ──────────────
+      if (!banco_origen || banco_origen.trim().length < 2) {
+        return recargarConError('Selecciona el banco de origen de la transferencia.');
+      }
+      if (!cuenta_origen || !/^\d{6,20}$/.test(cuenta_origen.trim())) {
+        return recargarConError('Ingresa un número de cuenta válido.');
+      }
+
+      // ── Simulación de rechazo: cuentas de prueba terminadas en 0000 ──
+      rechazada = cuenta_origen.trim().endsWith('0000');
+    }
+
+    if (rechazada) {
+      const mensajeRechazo = (metodo_pago === 'transferencia')
+        ? '❌ La transferencia fue rechazada por el banco (simulación). Verifica los datos de tu cuenta.'
+        : '❌ Pago rechazado por el emisor de la tarjeta (simulación). Intenta con otra tarjeta.';
+      return recargarConError(mensajeRechazo);
+    }
+
+    try {
+      // ── Traer las deudas reales desde la BD (nunca confiar en montos del cliente) ──
+      const deudasResult = await pool.query(`
+        SELECT * FROM deudas
+        WHERE id = ANY($1)
+          AND estudiante_id = $2
+          AND estado = 'pendiente'
+      `, [ids, estudianteId]);
+
+      const deudasAPagar = deudasResult.rows;
+
+      if (deudasAPagar.length === 0) {
+        return recargarConError('Las deudas seleccionadas ya no están disponibles para pago.');
+      }
+
+      const montoTotal = deudasAPagar.reduce((acc, d) => acc + Number(d.monto), 0);
+
+      // ── Registrar el pago ─────────────────────────────────────────
+      const pagoResult = await pool.query(`
+        INSERT INTO pagos (estudiante_id, monto, fecha, estado, metodo_pago)
+        VALUES ($1, $2, CURRENT_DATE, 'completado', $3)
+        RETURNING id, monto, fecha, metodo_pago
+      `, [estudianteId, montoTotal, metodo_pago]);
+
+      const pago = pagoResult.rows[0];
+
+      for (const deuda of deudasAPagar) {
+        await pool.query(`
+          INSERT INTO detalle_pagos (pago_id, deuda_id, monto_aplicado)
+          VALUES ($1, $2, $3)
+        `, [pago.id, deuda.id, deuda.monto]);
+      }
+
+      await pool.query(`
+        UPDATE deudas
+        SET estado = 'pagada'
+        WHERE id = ANY($1)
+      `, [deudasAPagar.map(d => d.id)]);
+
+      return res.redirect(`/pago/comprobante/${pago.id}`);
+
+    } catch (err) {
+      console.error('ERROR PAGO:', err);
+      return recargarConError('Ocurrió un error procesando el pago. Intenta nuevamente.');
+    }
+
+});
+
+/* =========================
+   COMPROBANTE DE PAGO
+========================= */
+app.get('/pago/comprobante/:id',
+  verificarLogin,
+  verificarRol('estudiante'),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const estudianteId = req.session.usuario.estudiante_id;
+
+      const pagoResult = await pool.query(`
+        SELECT p.*, e.nombre
+        FROM pagos p
+        JOIN estudiantes e ON e.id = p.estudiante_id
+        WHERE p.id = $1 AND p.estudiante_id = $2
+      `, [id, estudianteId]);
+      // p.* ya incluye metodo_pago
+
+      if (pagoResult.rows.length === 0) {
+        return res.status(404).send('Comprobante no encontrado');
+      }
+
+      const detalleResult = await pool.query(`
+        SELECT dp.monto_aplicado, d.id AS deuda_id, d.fecha_vencimiento
+        FROM detalle_pagos dp
+        JOIN deudas d ON d.id = dp.deuda_id
+        WHERE dp.pago_id = $1
+      `, [id]);
+
+      res.render('comprobante', {
+        pago: pagoResult.rows[0],
+        detalle: detalleResult.rows
+      });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Error al cargar el comprobante');
+    }
 });
 /*=================================
     CERTIFICADOS
@@ -631,6 +820,16 @@ app.get(
         ORDER BY p.fecha DESC
       `, [estudianteId, desde, hasta]);
 
+      // ── Consulta 3: Deudas individuales del estudiante (detalle) ──────────
+      const deudasResult = await pool.query(`
+        SELECT id, monto, estado, fecha_vencimiento
+        FROM deudas
+        WHERE estudiante_id = $1
+        ORDER BY
+          CASE WHEN estado = 'pendiente' THEN 0 ELSE 1 END,
+          fecha_vencimiento ASC
+      `, [estudianteId]);
+
       // ── Si el estudiante no existe en BD ──────────────────────────────────
       if (!resumenResult.rows[0]) {
         return res.status(404).send('Estudiante no encontrado');
@@ -639,6 +838,7 @@ app.get(
       res.render('mi-resumen', {
         estudiante: resumenResult.rows[0],
         historialPagos: pagosResult.rows,
+        deudas: deudasResult.rows,
         periodo: { desde, hasta }
       });
 
