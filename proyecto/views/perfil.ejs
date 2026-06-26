@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Perfil</title>
+
+    <link rel="stylesheet" href="/CSS/paneles.css">
+</head>
+
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar-institucional">
+
+    <div class="topbar-content">
+
+        <div class="logo-placeholder">
+            <img src="/logo.png" alt="UTFSM">
+            UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
+        </div>
+
+        <div class="topbar-right">
+
+            <% if(usuario.rol === 'admin'){ %>
+
+                <a href="/admin">← Volver</a>
+
+            <% } else if(usuario.rol === 'ejecutivo'){ %>
+
+                <a href="/ejecutivo">← Volver</a>
+
+            <% } else { %>
+
+                <a href="/estudiante">← Volver</a>
+
+            <% } %>
+
+            &nbsp; | &nbsp;
+
+            <a href="/logout">🔒 Cerrar sesión</a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="perfil-container">
+
+    <div class="perfil-card">
+
+        <div class="perfil-header">
+
+            <div class="perfil-avatar">
+                👤
+            </div>
+
+            <h1>Mi Perfil</h1>
+
+            <p>Gestiona tu información personal</p>
+
+        </div>
+
+        <div class="perfil-body">
+
+            <form action="/perfil" method="POST">
+
+                <div class="form-group">
+
+                    <label for="nombre">Nombre</label>
+
+                    <input
+                        id="nombre"
+                        type="text"
+                        name="nombre"
+                        value="<%= usuario.nombre %>"
+                        required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="email">Correo electrónico</label>
+
+                    <input
+                        id="email"
+                        type="email"
+                        name="email"
+                        value="<%= usuario.email %>"
+                        required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="password">Nueva contraseña</label>
+
+                    <input
+                        id="password"
+                        type="password"
+                        name="password"
+                        placeholder="Dejar en blanco para mantener la actual">
+
+                </div>
+
+                <div class="perfil-actions">
+
+                    <button type="submit" class="btn-guardar">
+                        💾 Guardar cambios
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
