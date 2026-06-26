@@ -105,9 +105,11 @@ app.post('/login', async (req, res) => {
     const usuario = result.rows[0];
 
     req.session.usuario = {
-      id:            usuario.id,
-      nombre:        usuario.nombre,
-      rol:           usuario.rol,
+      id: usuario.id,
+      nombre: usuario.nombre,
+      email: usuario.email,
+      password: usuario.password,
+      rol: usuario.rol,
       estudiante_id: usuario.estudiante_id
     };
 
@@ -119,6 +121,82 @@ app.post('/login', async (req, res) => {
   }
 
 });
+app.get('/perfil', verificarLogin, async (req, res) => {
+
+    try {
+
+        const result = await pool.query(
+            'SELECT * FROM usuarios WHERE id = $1',
+            [req.session.usuario.id]
+        );
+
+        const usuario = result.rows[0];
+
+        // Nos aseguramos de enviar el rol a la vista
+        usuario.rol = req.session.usuario.rol;
+
+        res.render('perfil', { usuario });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error');
+    }
+
+});
+app.post('/perfil', verificarLogin, async (req, res) => {
+
+    try {
+
+        const { nombre, email, password } = req.body;
+
+        if (password && password.trim() !== "") {
+
+            // El usuario escribió una nueva contraseña
+
+            await pool.query(`
+                UPDATE usuarios
+                SET nombre = $1,
+                    email = $2,
+                    password = $3
+                WHERE id = $4
+            `, [
+                nombre,
+                email,
+                password,
+                req.session.usuario.id
+            ]);
+
+        } else {
+
+            // Mantener la contraseña actual
+
+            await pool.query(`
+                UPDATE usuarios
+                SET nombre = $1,
+                    email = $2
+                WHERE id = $3
+            `, [
+                nombre,
+                email,
+                req.session.usuario.id
+            ]);
+
+        }
+
+        req.session.usuario.nombre = nombre;
+        req.session.usuario.email = email;
+
+        res.redirect('/perfil');
+
+    } catch (err) {
+
+        console.error(err);
+        res.status(500).send('Error');
+
+    }
+
+});
+
 app.get('/logout', (req, res) => {
 
   req.session.destroy(() => {

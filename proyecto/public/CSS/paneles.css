@@ -365,3 +365,120 @@ h2.bienvenida {
     .btn-volver:active{
         transform: translateY(0);
     }
+/* =========================
+   PERFIL
+========================= */
+
+.perfil-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px);
+    background: #f4f6f9;
+    padding: 40px;
+}
+
+.perfil-card {
+    width: 100%;
+    max-width: 550px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.perfil-header {
+    background: #1f3c88;
+    color: white;
+    text-align: center;
+    padding: 35px;
+}
+
+.perfil-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    color: #1f3c88;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 45px;
+    margin: 0 auto 15px auto;
+}
+
+.perfil-header h2 {
+    margin: 0;
+}
+
+.perfil-header p {
+    margin: 6px 0 0 0;
+    opacity: 0.9;
+}
+
+.perfil-body {
+    padding: 20px;
+}
+
+.perfil-body .form-group {
+    margin-bottom: 15px;
+}
+
+.perfil-body .form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.perfil-body .form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.perfil-body .form-group input:focus {
+    outline: none;
+    border-color: #1f3c88;
+}
+
+.perfil-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn-guardar {
+    width: 220px;
+}
+.btn-volver {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-guardar {
+    background: #1f3c88;
+    color: white;
+}
+
+.btn-guardar:hover {
+    background: #162f6b;
+}
+
+.btn-volver {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-volver:hover {
+    background: #555;
+}
