@@ -14,6 +14,9 @@ https://gitlab.inf.utfsm.cl/inf236-2026-1/inf236-sj-01/-/wikis/home
 Enlace para video prototipo
 https://drive.google.com/file/d/1WbeJA6GpBD99KQPPzpzIuFD-UV6dS730/view?usp=sharing
 
+Enlace para video 2 prototipo finalizado
+https://drive.google.com/file/d/1SpnSzP0irXMy67unTb1pQB89ecoSeA8_/view?usp=sharing
+
 ## Cómo levantar el proyecto
 
 ### Requisitos
