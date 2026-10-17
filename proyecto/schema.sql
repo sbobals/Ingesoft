@@ -24,6 +24,7 @@ CREATE TABLE deudas (
     estudiante_id INT REFERENCES estudiantes(id),
     arancel_id INT REFERENCES aranceles(id),
     monto INT NOT NULL,
+    descripcion VARCHAR(150) NOT NULL DEFAULT 'Arancel pendiente',
     fecha_vencimiento DATE,
     estado VARCHAR(50)
 );

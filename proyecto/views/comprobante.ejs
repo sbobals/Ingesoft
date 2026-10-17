@@ -181,7 +181,7 @@
 
                 <% detalle.forEach(d => { %>
                     <div class="detalle-item">
-                        <span>Deuda #<%= d.deuda_id %></span>
+                        <span><%= d.descripcion || ('Deuda #' + d.deuda_id) %></span>
                         <span>$<%= Number(d.monto_aplicado).toLocaleString('es-CL') %></span>
                     </div>
                 <% }) %>

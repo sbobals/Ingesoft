@@ -696,50 +696,107 @@ app.post('/pagar',
       return recargarConError(mensajeRechazo);
     }
 
+    let client;
+
     try {
-      // ── Traer las deudas reales desde la BD (nunca confiar en montos del cliente) ──
-      const deudasResult = await pool.query(`
-        SELECT * FROM deudas
-        WHERE id = ANY($1)
+      // Usamos una sola conexión para toda la transacción
+      client = await pool.connect();
+
+      await client.query('BEGIN');
+
+      // Bloquear las deudas seleccionadas mientras se procesa el pago
+      const deudasResult = await client.query(`
+        SELECT id, monto
+        FROM deudas
+        WHERE id = ANY($1::int[])
           AND estudiante_id = $2
           AND estado = 'pendiente'
+        ORDER BY id
+        FOR UPDATE
       `, [ids, estudianteId]);
 
       const deudasAPagar = deudasResult.rows;
 
-      if (deudasAPagar.length === 0) {
-        return recargarConError('Las deudas seleccionadas ya no están disponibles para pago.');
+      // Verificar que TODAS las deudas solicitadas estén disponibles
+      const idsUnicos = [...new Set(ids)];
+
+      if (
+        deudasAPagar.length === 0 ||
+        deudasAPagar.length !== idsUnicos.length
+      ) {
+        await client.query('ROLLBACK');
+
+        return recargarConError(
+          'Una o más deudas ya fueron pagadas o no están disponibles.'
+        );
       }
 
-      const montoTotal = deudasAPagar.reduce((acc, d) => acc + Number(d.monto), 0);
+      // El monto siempre se obtiene desde PostgreSQL
+      const montoTotal = deudasAPagar.reduce(
+        (total, deuda) => total + Number(deuda.monto),
+        0
+      );
 
-      // ── Registrar el pago ─────────────────────────────────────────
-      const pagoResult = await pool.query(`
-        INSERT INTO pagos (estudiante_id, monto, fecha, estado, metodo_pago)
+      // Registrar pago simulado
+      const pagoResult = await client.query(`
+        INSERT INTO pagos (
+          estudiante_id,
+          monto,
+          fecha,
+          estado,
+          metodo_pago
+        )
         VALUES ($1, $2, CURRENT_DATE, 'completado', $3)
         RETURNING id, monto, fecha, metodo_pago
       `, [estudianteId, montoTotal, metodo_pago]);
 
       const pago = pagoResult.rows[0];
 
+      // Asociar el pago a cada deuda
       for (const deuda of deudasAPagar) {
-        await pool.query(`
-          INSERT INTO detalle_pagos (pago_id, deuda_id, monto_aplicado)
+        await client.query(`
+          INSERT INTO detalle_pagos (
+            pago_id,
+            deuda_id,
+            monto_aplicado
+          )
           VALUES ($1, $2, $3)
         `, [pago.id, deuda.id, deuda.monto]);
       }
 
-      await pool.query(`
+      // Marcar las deudas como pagadas
+      await client.query(`
         UPDATE deudas
         SET estado = 'pagada'
-        WHERE id = ANY($1)
-      `, [deudasAPagar.map(d => d.id)]);
+        WHERE id = ANY($1::int[])
+          AND estudiante_id = $2
+          AND estado = 'pendiente'
+      `, [idsUnicos, estudianteId]);
+
+      // Confirmar todas las operaciones juntas
+      await client.query('COMMIT');
 
       return res.redirect(`/pago/comprobante/${pago.id}`);
 
     } catch (err) {
       console.error('ERROR PAGO:', err);
-      return recargarConError('Ocurrió un error procesando el pago. Intenta nuevamente.');
+
+      if (client) {
+        try {
+          await client.query('ROLLBACK');
+        } catch (rollbackError) {
+          console.error('ERROR ROLLBACK:', rollbackError);
+        }
+      }
+
+      return recargarConError(
+        'Ocurrió un error procesando el pago. Intenta nuevamente.'
+      );
+
+    } finally {
+      if (client) {
+        client.release();
+      }
     }
 
 });
@@ -768,7 +825,11 @@ app.get('/pago/comprobante/:id',
       }
 
       const detalleResult = await pool.query(`
-        SELECT dp.monto_aplicado, d.id AS deuda_id, d.fecha_vencimiento
+        SELECT
+          dp.monto_aplicado,
+          d.id AS deuda_id,
+          d.descripcion,
+          d.fecha_vencimiento
         FROM detalle_pagos dp
         JOIN deudas d ON d.id = dp.deuda_id
         WHERE dp.pago_id = $1
@@ -819,6 +880,7 @@ verificarRol('estudiante'),
 /*=================================
     RESUMEN ESTUDIANTE
 ===================================*/
+
 app.get(
   '/mi-resumen',
   verificarRol('estudiante'),
@@ -838,7 +900,7 @@ app.get(
       const desde = req.query.desde || primerDiaMes;
       const hasta = req.query.hasta || ultimoDiaMes;
 
-      // ── Consulta 1: Resumen financiero integrado (Criterio 1) ──────────────
+      // ── Consulta 1: Resumen financiero integrado (Criterio 1) ──
       // Se hacen subqueries independientes para evitar el producto cartesiano
       // que ocurre al hacer JOIN de deudas + pagos + beneficios simultáneamente.
       const resumenResult = await pool.query(`
@@ -846,20 +908,26 @@ app.get(
           e.id,
           e.nombre,
 
-          COALESCE(deudas_agg.total_deuda, 0)      AS deuda,
-          COALESCE(pagos_agg.total_pagos, 0)        AS pagos,
+          COALESCE(deudas_agg.total_deuda, 0) AS deuda,
+          COALESCE(pagos_agg.total_pagos, 0) AS pagos,
           COALESCE(beneficios_agg.total_beneficios, 0) AS beneficios,
 
           -- Saldo pendiente real = deuda - pagos aplicados - beneficios
-          COALESCE(deudas_agg.total_deuda, 0)
-            - COALESCE(pagos_agg.total_pagos, 0)
-            - COALESCE(beneficios_agg.total_beneficios, 0) AS saldo_pendiente
+          COALESCE(deudas_agg.total_pendiente, 0) AS saldo_pendiente
 
         FROM estudiantes e
 
         -- Total de deudas del estudiante
         LEFT JOIN (
-          SELECT estudiante_id, SUM(monto) AS total_deuda
+          SELECT
+            estudiante_id,
+            SUM(monto) AS total_deuda,
+            SUM(
+              CASE
+                WHEN estado = 'pendiente' THEN monto
+                ELSE 0
+              END
+            ) AS total_pendiente
           FROM deudas
           WHERE estudiante_id = $1
           GROUP BY estudiante_id
@@ -884,7 +952,7 @@ app.get(
         WHERE e.id = $1
       `, [estudianteId]);
 
-      // ── Consulta 2: Historial de pagos por periodo (Criterio 2) ───────────
+      // ── Consulta 2: Historial de pagos por periodo (Criterio 2) ──
       const pagosResult = await pool.query(`
         SELECT
           p.id,
@@ -897,6 +965,7 @@ app.get(
             JSON_AGG(
               JSON_BUILD_OBJECT(
                 'deuda_id',       dp.deuda_id,
+                'descripcion',    d.descripcion,
                 'monto_aplicado', dp.monto_aplicado,
                 'vencimiento',    d.fecha_vencimiento,
                 'estado_deuda',   d.estado
@@ -920,9 +989,9 @@ app.get(
         ORDER BY p.fecha DESC
       `, [estudianteId, desde, hasta]);
 
-      // ── Consulta 3: Deudas individuales del estudiante (detalle) ──────────
+      // ── Consulta 3: Deudas individuales del estudiante (detalle) ──
       const deudasResult = await pool.query(`
-        SELECT id, monto, estado, fecha_vencimiento
+        SELECT id, descripcion, monto, estado, fecha_vencimiento
         FROM deudas
         WHERE estudiante_id = $1
         ORDER BY
@@ -930,7 +999,7 @@ app.get(
           fecha_vencimiento ASC
       `, [estudianteId]);
 
-      // ── Si el estudiante no existe en BD ──────────────────────────────────
+      // ── Si el estudiante no existe en BD ──
       if (!resumenResult.rows[0]) {
         return res.status(404).send('Estudiante no encontrado');
       }
