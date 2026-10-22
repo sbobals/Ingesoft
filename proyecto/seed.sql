@@ -26,11 +26,11 @@ VALUES
 (3, 600000, '2025-1');
 
 INSERT INTO deudas
-(estudiante_id, arancel_id, monto, fecha_vencimiento, estado)
+(estudiante_id, arancel_id, monto, descripcion, fecha_vencimiento, estado)
 VALUES
-(1, 1, 200000, '2026-06-01', 'pendiente'),
-(2, 2, 100000, '2026-06-15', 'pendiente'),
-(3, 3, 150000, '2026-07-01', 'pagada');
+(1, 1, 200000, 'Arancel académico - cuota 1', '2026-06-01', 'pagada'),
+(2, 2, 100000, 'Arancel académico - cuota 2', '2026-06-15', 'pagada'),
+(3, 3, 150000, 'Arancel académico - cuota 3', '2026-07-01', 'pagada');
 
 INSERT INTO beneficios
 (estudiante_id, tipo, cobertura, vigencia)
@@ -42,15 +42,15 @@ VALUES
 INSERT INTO pagos
 (estudiante_id, monto, fecha, estado)
 VALUES
-(1, 100000, '2026-05-01', 'completado'),
-(2, 50000, '2026-05-03', 'completado'),
+(1, 200000, '2026-05-01', 'completado'),
+(2, 100000, '2026-05-03', 'completado'),
 (3, 150000, '2026-05-05', 'completado');
 
 INSERT INTO detalle_pagos
 (pago_id, deuda_id, monto_aplicado)
 VALUES
-(1, 1, 100000),
-(2, 2, 50000),
+(1, 1, 200000),
+(2, 2, 100000),
 (3, 3, 150000);
 
 INSERT INTO detalle_historico

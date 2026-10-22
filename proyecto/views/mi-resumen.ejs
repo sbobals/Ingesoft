@@ -116,7 +116,7 @@
             </span>
 
             <div class="saldo-monto <%= Number(estudiante.saldo_pendiente) > 0 ? 'saldo-rojo' : 'saldo-verde' %>">
-                $<%= Math.abs(Number(estudiante.saldo_pendiente)).toLocaleString('es-CL') %>
+                $<%= Number(estudiante.saldo_pendiente).toLocaleString('es-CL') %>
             </div>
 
             <p>
@@ -130,7 +130,9 @@
             <!-- Barra de progreso de pago -->
             <%
                 const deudaTotal = Number(estudiante?.deuda || 0);
-                const cubierto = Number(estudiante?.pagos || 0) + Number(estudiante?.beneficios || 0);
+                const saldoPendiente = Number(estudiante?.saldo_pendiente || 0);
+
+                const cubierto = Math.max(0, deudaTotal - saldoPendiente);
 
                 const porcentaje = deudaTotal > 0
                     ? Math.min(100, Math.round((cubierto / deudaTotal) * 100))
@@ -147,7 +149,7 @@
                 </div>
             
                 <div class="progreso-detalle">
-                    <span>💰 Pagado + 🎓 Beneficios: $<%= cubierto.toLocaleString('es-CL') %></span>
+                    <span>✅ Deuda regularizada: $<%= cubierto.toLocaleString('es-CL') %></span>
                     <span>Total adeudado: $<%= deudaTotal.toLocaleString('es-CL') %></span>
                 </div>
             </div>
@@ -185,7 +187,7 @@
 
                         <thead>
                             <tr>
-                                <th>N° Deuda</th>
+                                <th>Concepto</th>
                                 <th>Monto</th>
                                 <th>Vencimiento</th>
                                 <th>Estado</th>
@@ -196,7 +198,7 @@
                         <tbody>
                             <% deudas.forEach(function(d) { %>
                             <tr>
-                                <td class="pago-id">#<%= d.id %></td>
+                                <td class="pago-id"><%= d.descripcion || ('Deuda #' + d.id) %></td>
                                 <td class="monto-celda">
                                     $<%= Number(d.monto).toLocaleString('es-CL') %>
                                 </td>
@@ -331,7 +333,7 @@
                                         <ul class="lista-detalles">
                                             <% pago.detalles.forEach(function(d) { %>
                                             <li>
-                                                Deuda #<%= d.deuda_id %>
+                                                <%= d.descripcion || ('Deuda #' + d.deuda_id) %>
                                                 — $<%= Number(d.monto_aplicado).toLocaleString('es-CL') %>
                                                 <% if (d.vencimiento) { %>
                                                     <span class="vencimiento">
