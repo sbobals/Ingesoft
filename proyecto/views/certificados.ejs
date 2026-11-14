@@ -1,101 +1,84 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Solicitud de Certificados</title>
-
-<link rel="stylesheet" href="/CSS/paneles.css">
-<link rel="stylesheet" href="/CSS/certificados.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de Certificados — UTFSM</title>
+    <link rel="stylesheet" href="/CSS/paneles.css">
+    <link rel="stylesheet" href="/CSS/certificados.css">
 </head>
 <body>
 
 <div class="topbar-institucional">
     <div class="topbar-content">
-
         <span class="logo-placeholder">
-            🎓 UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
+            <img src="/logo.png" alt="Logo USM"> UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
         </span>
-
         <div class="topbar-right">
-            <a href="javascript:history.back()">
-                ← Volver
-            </a>
+            <a href="/mis-solicitudes">📋 Mis Solicitudes</a> &nbsp;|&nbsp;
+            <a href="/estudiante">← Volver al Panel</a>
         </div>
-
     </div>
 </div>
 
 <div class="main-container">
 
     <div class="panel-header">
-
         <div class="role-icon student">
             📄
         </div>
-
         <div class="panel-header-text">
-
             <div class="role-tag student">
                 CERTIFICADOS DIGITALES
             </div>
-
             <h2>Solicitud de Certificados</h2>
-
             <p>
-                Seleccione el certificado que desea solicitar.
+                Selecciona el tipo de certificado e indica el motivo de tu solicitud. Será registrada con estado inicial <strong>PENDIENTE</strong>.
             </p>
-
         </div>
-
     </div>
 
+    <% if (typeof mensaje !== 'undefined' && mensaje) { %>
+        <div class="alerta <%= mensaje.tipo %>">
+            <%= mensaje.texto %>
+        </div>
+    <% } %>
+
     <div class="form-card">
+        <form method="POST" action="/certificados/solicitar">
 
-        <form method="GET" action="/generar-certificado">
-
-            <label>
-                Categoría:
+            <label for="tipo_certificado">
+                Tipo de certificado:
             </label>
-
-            <select name="categoria">
-
-                <option value="certificados">
-                    Certificados Digitales
-                </option>
-
+            <select id="tipo_certificado" name="tipo_certificado" required>
+                <option value="">Seleccione un certificado</option>
+                <option value="Certificado de Alumno Regular">Certificado de Alumno Regular</option>
+                <option value="Certificado de Arancel y Matrícula">Certificado de Arancel y Matrícula</option>
+                <option value="Seguro de Práctica">Seguro de Práctica</option>
+                <option value="Certificado de No Deuda Financiera">Certificado de No Deuda Financiera</option>
             </select>
 
-            <label>
-                Servicio:
+            <label for="motivo">
+                Motivo de la solicitud:
             </label>
+            <textarea
+                id="motivo"
+                name="motivo"
+                rows="4"
+                placeholder="Ej: Trámite de renovación de pase escolar (TNE), postulación a beca municipal, práctica profesional..."
+                required
+            ></textarea>
 
-            <select name="tipo" required>
-
-                <option value="">
-                    Seleccione un certificado
-                </option>
-
-                <option value="alumno-regular">
-                    Certificado de Alumno Regular
-                </option>
-
-                <option value="arancel-matricula">
-                    Certificado de Arancel y Matrícula
-                </option>
-
-                <option value="seguro-practica">
-                    Seguro de Práctica
-                </option>
-
-            </select>
-
-            <button type="submit">
-                Continuar
-            </button>
+            <div class="form-actions">
+                <button type="submit" class="btn-enviar-solicitud">
+                    Enviar Solicitud
+                </button>
+                <a href="/mis-solicitudes" class="btn-secundario-solicitud">
+                    📋 Ver Estado de Mis Solicitudes
+                </a>
+            </div>
 
         </form>
-
     </div>
 
 </div>

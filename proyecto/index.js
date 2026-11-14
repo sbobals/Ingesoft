@@ -8,6 +8,7 @@ const port = 3000;
 const PDFDocument = require('pdfkit');
 const verificarLogin = require('./middleware/auth');
 const verificarRol = require('./middleware/roles');
+const solicitudesController = require('./controllers/solicitudesController');
 
 /* =========================
    CONFIGURACIÓN
@@ -234,9 +235,7 @@ app.get('/admin',
 app.get('/ejecutivo',
   verificarLogin,
   verificarRol('ejecutivo'),
-  (req,res)=>{
-    res.render('ejecutivo');
-  }
+  solicitudesController.mostrarDashboardEjecutivo
 );
 
 app.get(
@@ -846,37 +845,31 @@ app.get('/pago/comprobante/:id',
     }
 });
 /*=================================
-    CERTIFICADOS
+    CERTIFICADOS Y SOLICITUDES (RS4 y RS6)
 ===================================*/
 app.get('/certificados',
+  verificarLogin,
   verificarRol('estudiante'),
-  (req,res) => {
+  solicitudesController.mostrarFormularioSolicitud
+);
 
-    res.render('certificados');
+app.post('/certificados/solicitar',
+  verificarLogin,
+  verificarRol('estudiante'),
+  solicitudesController.crearSolicitud
+);
 
-});
-app.get('/generar-certificado',
-verificarRol('estudiante'),
-(req,res)=>{
+app.post('/certificados',
+  verificarLogin,
+  verificarRol('estudiante'),
+  solicitudesController.crearSolicitud
+);
 
-    const tipo = req.query.tipo;
-
-    switch(tipo){
-
-        case 'alumno-regular':
-            return res.redirect('/certificado/alumno-regular');
-
-        case 'arancel-matricula':
-            return res.redirect('/certificado/arancel-matricula');
-
-        case 'seguro-practica':
-            return res.redirect('/certificado/seguro-practica');
-
-        default:
-            return res.redirect('/certificados');
-    }
-
-});
+app.get('/mis-solicitudes',
+  verificarLogin,
+  verificarRol('estudiante'),
+  solicitudesController.listarMisSolicitudes
+);
 /*=================================
     RESUMEN ESTUDIANTE
 ===================================*/

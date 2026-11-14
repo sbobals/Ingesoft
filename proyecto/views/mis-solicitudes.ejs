@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estado de Mis Solicitudes — UTFSM</title>
+    <link rel="stylesheet" href="/CSS/paneles.css">
+    <link rel="stylesheet" href="/CSS/certificados.css">
+</head>
+<body>
+
+<div class="topbar-institucional">
+    <div class="topbar-content">
+        <span class="logo-placeholder">
+            <img src="/logo.png" alt="Logo USM"> UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
+        </span>
+        <div class="topbar-right">
+            <a href="/certificados">➕ Solicitar Certificado</a> &nbsp;|&nbsp;
+            <a href="/estudiante">← Volver al Panel</a>
+        </div>
+    </div>
+</div>
+
+<div class="main-container">
+
+    <div class="panel-header">
+        <div class="role-icon student">
+            📋
+        </div>
+        <div class="panel-header-text">
+            <div class="role-tag student">
+                SEGUIMIENTO DE CERTIFICADOS
+            </div>
+            <h2>Historial y Estado de Solicitudes</h2>
+            <p>
+                Consulta el listado histórico y el estado actual de tus solicitudes de certificados.
+            </p>
+        </div>
+    </div>
+
+    <% if (typeof mensaje !== 'undefined' && mensaje) { %>
+        <div class="alerta <%= mensaje.tipo %>">
+            <%= mensaje.texto %>
+        </div>
+    <% } %>
+
+    <div class="solicitudes-card">
+        <div class="solicitudes-header-bar">
+            <h3>Mis Solicitudes Registradas (<%= (solicitudes || []).length %>)</h3>
+            <a href="/certificados" class="btn-nueva-solicitud">+ Nueva Solicitud</a>
+        </div>
+
+        <% if (!solicitudes || solicitudes.length === 0) { %>
+            <div class="empty-solicitudes">
+                <p>Aún no has realizado solicitudes de certificados.</p>
+                <a href="/certificados" class="btn-nueva-solicitud">Solicitar mi primer certificado</a>
+            </div>
+        <% } else { %>
+            <div class="tabla-responsive">
+                <table class="tabla-solicitudes">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Fecha Solicitud</th>
+                            <th>Tipo de Certificado</th>
+                            <th>Motivo</th>
+                            <th>Estado</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% solicitudes.forEach(function(sol) { 
+                            const estadoUpper = (sol.estado || 'PENDIENTE').toUpperCase();
+                            let claseBadge = 'badge-pendiente';
+                            if (estadoUpper === 'APROBADA') claseBadge = 'badge-aprobada';
+                            if (estadoUpper === 'RECHAZADA') claseBadge = 'badge-rechazada';
+
+                            const fechaFormateada = sol.fecha_solicitud
+                                ? new Date(sol.fecha_solicitud).toLocaleDateString('es-CL', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })
+                                : '—';
+                        %>
+                            <tr>
+                                <td class="col-id">#<%= sol.id %></td>
+                                <td class="col-fecha"><%= fechaFormateada %></td>
+                                <td class="col-tipo"><strong><%= sol.tipo_certificado %></strong></td>
+                                <td class="col-motivo"><%= sol.motivo %></td>
+                                <td>
+                                    <span class="badge-estado <%= claseBadge %>">
+                                        <%= estadoUpper %>
+                                    </span>
+                                </td>
+                                <td class="col-observacion">
+                                    <%= sol.observacion ? sol.observacion : '—' %>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+
+    <div class="volver-container">
+        <a href="/estudiante" class="btn-volver">← Volver al Panel Estudiante</a>
+    </div>
+
+</div>
+
+<div class="footer-portal">
+    <hr>
+    <p>© Universidad Técnica Federico Santa María</p>
+</div>
+
+</body>
+</html>

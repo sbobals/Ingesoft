@@ -6,8 +6,6 @@
     <title>Panel Ejecutivo — UTFSM</title>
     <link rel="stylesheet" href="/CSS/paneles.css">
     <style>
-       
-
         .role-icon {
             width: 52px;
             height: 52px;
@@ -45,6 +43,37 @@
             </div>
         </div>
 
+        <% 
+            const totalPendientes = typeof solicitudesPendientes !== 'undefined' ? Number(solicitudesPendientes) : 0;
+            const listaPendientes = typeof ultimasPendientes !== 'undefined' ? ultimasPendientes : [];
+        %>
+
+        <% if (totalPendientes > 0) { %>
+            <div class="notificacion-ejecutivo alerta-pendientes">
+                <div class="notificacion-icono">🔔</div>
+                <div class="notificacion-contenido">
+                    <strong>Nuevas solicitudes de certificados pendientes</strong>
+                    <p>
+                        Tienes <strong><%= totalPendientes %></strong>
+                        <%= totalPendientes === 1 ? 'solicitud en estado PENDIENTE esperando' : 'solicitudes en estado PENDIENTE esperando' %>
+                        revisión.
+                    </p>
+                </div>
+                <span class="contador-badge activo">
+                    <%= totalPendientes %> PENDIENTE<%= totalPendientes === 1 ? '' : 'S' %>
+                </span>
+            </div>
+        <% } else { %>
+            <div class="notificacion-ejecutivo sin-pendientes">
+                <div class="notificacion-icono">✅</div>
+                <div class="notificacion-contenido">
+                    <strong>Sin solicitudes pendientes</strong>
+                    <p>No hay nuevas solicitudes de certificados por revisar en este momento.</p>
+                </div>
+                <span class="contador-badge inactivo">0 PENDIENTES</span>
+            </div>
+        <% } %>
+
         <div class="menu-horizontal">
 
             <div class="menu-item">
@@ -61,7 +90,58 @@
                 </p>
             </div>
 
+            <div class="menu-item menu-item-notificacion">
+                <div class="menu-item-top">
+                    <div class="menu-item-icon">📄</div>
+                    <span class="badge-contador <%= totalPendientes > 0 ? 'con-alerta' : 'sin-alerta' %>">
+                        <%= totalPendientes %> pendiente<%= totalPendientes === 1 ? '' : 's' %>
+                    </span>
+                </div>
+                <span class="btn-portal">Solicitudes de Certificados</span>
+                <p class="desc-portal">
+                    <% if (totalPendientes > 0) { %>
+                        Hay <strong><%= totalPendientes %></strong> <%= totalPendientes === 1 ? 'nueva solicitud registrada' : 'nuevas solicitudes registradas' %> por estudiantes para revisión.
+                    <% } else { %>
+                        Bandeja de solicitudes de certificados al día.
+                    <% } %>
+                </p>
+            </div>
+
         </div>
+
+        <% if (listaPendientes.length > 0) { %>
+            <div class="bandeja-resumen-ejecutivo">
+                <h3>📌 Últimas solicitudes en estado PENDIENTE</h3>
+                <div class="tabla-responsive">
+                    <table class="tabla-ejecutivo-pendientes">
+                        <thead>
+                            <tr>
+                                <th>N°</th>
+                                <th>Estudiante</th>
+                                <th>Tipo de Certificado</th>
+                                <th>Motivo</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% listaPendientes.forEach(function(item) { %>
+                                <tr>
+                                    <td>#<%= item.id %></td>
+                                    <td><strong><%= item.estudiante_nombre %></strong></td>
+                                    <td><%= item.tipo_certificado %></td>
+                                    <td><%= item.motivo %></td>
+                                    <td>
+                                        <%= item.fecha_solicitud ? new Date(item.fecha_solicitud).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—' %>
+                                    </td>
+                                    <td><span class="badge-pendiente-sm">PENDIENTE</span></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <% } %>
 
     </div>
 

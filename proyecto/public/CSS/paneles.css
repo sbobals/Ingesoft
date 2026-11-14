@@ -501,3 +501,139 @@ h2.bienvenida {
     color:#991b1b;
     border:1px solid #fca5a5;
 }
+
+/* ============================================================
+   NOTIFICACIÓN DE SOLICITUDES PENDIENTES - EJECUTIVO (RS7)
+   ============================================================ */
+.notificacion-ejecutivo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 24px;
+    border-radius: 12px;
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+}
+
+.notificacion-ejecutivo.alerta-pendientes {
+    background: #FFFBEB;
+    border-color: #F59E0B;
+    box-shadow: 0 3px 12px rgba(245, 158, 11, 0.12);
+}
+
+.notificacion-ejecutivo.sin-pendientes {
+    background: #F0FDF4;
+    border-color: #BBF7D0;
+}
+
+.notificacion-icono {
+    font-size: 26px;
+    flex-shrink: 0;
+}
+
+.notificacion-contenido {
+    flex: 1;
+}
+
+.notificacion-contenido strong {
+    display: block;
+    font-size: 15px;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+}
+
+.notificacion-contenido p {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.contador-badge {
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.contador-badge.activo {
+    background: #D97706;
+    color: #FFFFFF;
+}
+
+.contador-badge.inactivo {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.menu-item-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.badge-contador {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+}
+
+.badge-contador.con-alerta {
+    background: #FEF3C7;
+    color: #92400E;
+    border: 1px solid #F59E0B;
+}
+
+.badge-contador.sin-alerta {
+    background: #E2E8F0;
+    color: #475569;
+}
+
+.bandeja-resumen-ejecutivo {
+    margin-top: 28px;
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+}
+
+.bandeja-resumen-ejecutivo h3 {
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+}
+
+.tabla-ejecutivo-pendientes {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.tabla-ejecutivo-pendientes th {
+    text-align: left;
+    padding: 10px 12px;
+    background: #F8FAFC;
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--border);
+}
+
+.tabla-ejecutivo-pendientes td {
+    padding: 12px;
+    border-bottom: 1px solid #EEF2F6;
+    color: var(--text-primary);
+}
+
+.badge-pendiente-sm {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #FEF3C7;
+    color: #92400E;
+}

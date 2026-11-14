@@ -1,3 +1,4 @@
+TRUNCATE solicitudes RESTART IDENTITY CASCADE;
 TRUNCATE detalle_pagos RESTART IDENTITY CASCADE;
 TRUNCATE pagos RESTART IDENTITY CASCADE;
 TRUNCATE beneficios RESTART IDENTITY CASCADE;
@@ -62,3 +63,11 @@ VALUES
 (1, 2026, 1),
 (2, 2026, 1),
 (3, 2026, 1);
+
+INSERT INTO solicitudes
+(estudiante_id, tipo_certificado, motivo, estado, observacion, fecha_solicitud)
+VALUES
+(1, 'Certificado de Alumno Regular', 'Trámite de renovación de pase escolar (TNE)', 'PENDIENTE', NULL, CURRENT_TIMESTAMP - INTERVAL '2 days'),
+(1, 'Certificado de Arancel y Matrícula', 'Postulación a beca municipal', 'APROBADA', 'Documentación financiera al día.', CURRENT_TIMESTAMP - INTERVAL '5 days'),
+(2, 'Seguro de Práctica', 'Práctica industrial de verano en empresa externa', 'PENDIENTE', NULL, CURRENT_TIMESTAMP - INTERVAL '1 day');
+

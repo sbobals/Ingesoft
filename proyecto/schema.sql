@@ -59,3 +59,15 @@ CREATE TABLE detalle_historico (
     semestre INT,
     PRIMARY KEY (id, ano, semestre)
 );
+
+CREATE TABLE solicitudes (
+    id SERIAL PRIMARY KEY,
+    estudiante_id INT NOT NULL REFERENCES estudiantes(id) ON DELETE CASCADE,
+    tipo_certificado VARCHAR(100) NOT NULL,
+    motivo TEXT NOT NULL,
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'APROBADA', 'RECHAZADA')),
+    observacion TEXT DEFAULT NULL,
+    fecha_solicitud TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_resolucion TIMESTAMP DEFAULT NULL
+);
+
