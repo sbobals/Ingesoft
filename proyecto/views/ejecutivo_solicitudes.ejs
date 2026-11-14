@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Solicitudes de Certificados — Ejecutivo UTFSM</title>
+    <link rel="stylesheet" href="/CSS/paneles.css">
+    <link rel="stylesheet" href="/CSS/certificados.css">
+</head>
+<body>
+
+<div class="topbar-institucional">
+    <div class="topbar-content">
+        <span class="logo-placeholder">
+            <img src="/logo.png" alt="Logo USM"> UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA
+        </span>
+        <div class="topbar-right">
+            <a href="/ejecutivo">← Volver al Panel Ejecutivo</a> &nbsp;|&nbsp;
+            <a href="/logout">🔒 Salir</a>
+        </div>
+    </div>
+</div>
+
+<div class="main-container">
+
+    <div class="panel-header">
+        <div class="role-icon exec">
+            📄
+        </div>
+        <div class="panel-header-text">
+            <div class="role-tag exec">
+                ● EJECUTIVO FINANCIERO
+            </div>
+            <h2>Bandeja de Solicitudes de Certificados</h2>
+            <p>
+                Revisa y resuelve las solicitudes pendientes de los estudiantes (RS5). Si rechazas una solicitud, es obligatorio registrar una observación.
+            </p>
+        </div>
+    </div>
+
+    <% if (typeof mensaje !== 'undefined' && mensaje) { %>
+        <div class="alerta <%= mensaje.tipo %>">
+            <%= mensaje.texto %>
+        </div>
+    <% } %>
+
+    <%
+        const todas = typeof solicitudes !== 'undefined' ? solicitudes : [];
+        const pendientes = todas.filter(s => s.estado === 'PENDIENTE');
+        const resueltas = todas.filter(s => s.estado !== 'PENDIENTE');
+    %>
+
+    <div class="solicitudes-card" style="margin-bottom: 28px;">
+        <div class="solicitudes-header-bar">
+            <h3>⏳ Solicitudes Pendientes por Resolver (<%= pendientes.length %>)</h3>
+            <span class="badge-contador <%= pendientes.length > 0 ? 'con-alerta' : 'sin-alerta' %>">
+                <%= pendientes.length %> PENDIENTE<%= pendientes.length === 1 ? '' : 'S' %>
+            </span>
+        </div>
+
+        <% if (pendientes.length === 0) { %>
+            <div class="empty-solicitudes">
+                <p>No hay solicitudes pendientes de revisión en este momento.</p>
+            </div>
+        <% } else { %>
+            <div class="tabla-responsive">
+                <table class="tabla-solicitudes">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Fecha Solicitud</th>
+                            <th>Estudiante</th>
+                            <th>Tipo de Certificado</th>
+                            <th>Motivo</th>
+                            <th>Estado Actual</th>
+                            <th>Resolución (Aprobar / Rechazar)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% pendientes.forEach(function(sol) {
+                            const fechaFmt = sol.fecha_solicitud
+                                ? new Date(sol.fecha_solicitud).toLocaleDateString('es-CL', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })
+                                : '—';
+                        %>
+                            <tr>
+                                <td class="col-id">#<%= sol.id %></td>
+                                <td class="col-fecha"><%= fechaFmt %></td>
+                                <td><strong><%= sol.estudiante_nombre %></strong></td>
+                                <td><%= sol.tipo_certificado %></td>
+                                <td class="col-motivo"><%= sol.motivo %></td>
+                                <td>
+                                    <span class="badge-estado badge-pendiente">PENDIENTE</span>
+                                </td>
+                                <td>
+                                    <form method="POST" action="/ejecutivo/solicitudes/<%= sol.id %>/resolver" class="form-resolucion-inline">
+                                        <input type="hidden" name="origen" value="bandeja">
+                                        <select name="estado" class="select-resolucion" required>
+                                            <option value="APROBADA">APROBADA</option>
+                                            <option value="RECHAZADA">RECHAZADA</option>
+                                        </select>
+                                        <input
+                                            type="text"
+                                            name="observacion"
+                                            class="input-observacion-resolucion"
+                                            placeholder="Observación (obligatoria si rechaza)"
+                                        >
+                                        <button type="submit" class="btn-resolver-inline">
+                                            Guardar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+
+    <div class="solicitudes-card">
+        <div class="solicitudes-header-bar">
+            <h3>🗂️ Historial de Solicitudes Resueltas (<%= resueltas.length %>)</h3>
+        </div>
+
+        <% if (resueltas.length === 0) { %>
+            <div class="empty-solicitudes">
+                <p>Aún no se han resuelto solicitudes.</p>
+            </div>
+        <% } else { %>
+            <div class="tabla-responsive">
+                <table class="tabla-solicitudes">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Estudiante</th>
+                            <th>Tipo de Certificado</th>
+                            <th>Motivo</th>
+                            <th>Estado</th>
+                            <th>Observación</th>
+                            <th>Resuelto Por</th>
+                            <th>Fecha Resolución</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% resueltas.forEach(function(sol) {
+                            const estadoUpper = (sol.estado || '').toUpperCase();
+                            const claseBadge = estadoUpper === 'APROBADA' ? 'badge-aprobada' : 'badge-rechazada';
+                            const fechaRes = sol.fecha_resolucion
+                                ? new Date(sol.fecha_resolucion).toLocaleDateString('es-CL', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })
+                                : '—';
+                        %>
+                            <tr>
+                                <td class="col-id">#<%= sol.id %></td>
+                                <td><strong><%= sol.estudiante_nombre %></strong></td>
+                                <td><%= sol.tipo_certificado %></td>
+                                <td class="col-motivo"><%= sol.motivo %></td>
+                                <td>
+                                    <span class="badge-estado <%= claseBadge %>"><%= estadoUpper %></span>
+                                </td>
+                                <td class="col-observacion"><%= sol.observacion || '—' %></td>
+                                <td><%= sol.ejecutivo_nombre || 'Ejecutivo' %></td>
+                                <td class="col-fecha"><%= fechaRes %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+
+    <div class="volver-container">
+        <a href="/ejecutivo" class="btn-volver">← Volver al Panel Ejecutivo</a>
+    </div>
+
+</div>
+
+<div class="footer-portal">
+    <hr>
+    <p>© Universidad Técnica Federico Santa María</p>
+</div>
+
+</body>
+</html>

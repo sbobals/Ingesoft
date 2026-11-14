@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Ejecutivo — UTFSM</title>
     <link rel="stylesheet" href="/CSS/paneles.css">
+    <link rel="stylesheet" href="/CSS/certificados.css">
     <style>
         .role-icon {
             width: 52px;
@@ -25,6 +26,7 @@
         <div class="topbar-content">
             <span class="logo-placeholder"><img src="/logo.png" alt="Logo USM"> UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA</span>
             <div class="topbar-right">
+                <a href="/ejecutivo/solicitudes">📄 Bandeja Solicitudes</a> &nbsp;|&nbsp;
                 <a href="/perfil">👤 Mi Perfil</a> &nbsp;|&nbsp;
                 <a href="/logout">🔒 Salir</a> &nbsp;|&nbsp;  
                 <a href="#" onclick="window.open('/ayuda.png', 'ayuda', 'width=800,height=600,resizable=yes,scrollbars=yes')">❓ Ayuda</a>
@@ -39,9 +41,15 @@
             <div class="panel-header-text">
                 <div class="role-tag">● Ejecutivo</div>
                 <h2>Bienvenido/a, <%= usuario.nombre %></h2>
-                <p>Panel ejecutivo — consulta y seguimiento financiero.</p>
+                <p>Panel ejecutivo — consulta, seguimiento financiero y resolución de solicitudes.</p>
             </div>
         </div>
+
+        <% if (typeof mensaje !== 'undefined' && mensaje) { %>
+            <div class="alerta <%= mensaje.tipo %>">
+                <%= mensaje.texto %>
+            </div>
+        <% } %>
 
         <% 
             const totalPendientes = typeof solicitudesPendientes !== 'undefined' ? Number(solicitudesPendientes) : 0;
@@ -59,9 +67,9 @@
                         revisión.
                     </p>
                 </div>
-                <span class="contador-badge activo">
-                    <%= totalPendientes %> PENDIENTE<%= totalPendientes === 1 ? '' : 'S' %>
-                </span>
+                <a href="/ejecutivo/solicitudes" class="contador-badge activo" style="text-decoration: none;">
+                    <%= totalPendientes %> PENDIENTE<%= totalPendientes === 1 ? '' : 'S' %> · Gestionar →
+                </a>
             </div>
         <% } else { %>
             <div class="notificacion-ejecutivo sin-pendientes">
@@ -97,7 +105,7 @@
                         <%= totalPendientes %> pendiente<%= totalPendientes === 1 ? '' : 's' %>
                     </span>
                 </div>
-                <span class="btn-portal">Solicitudes de Certificados</span>
+                <a href="/ejecutivo/solicitudes" class="btn-portal">Solicitudes de Certificados</a>
                 <p class="desc-portal">
                     <% if (totalPendientes > 0) { %>
                         Hay <strong><%= totalPendientes %></strong> <%= totalPendientes === 1 ? 'nueva solicitud registrada' : 'nuevas solicitudes registradas' %> por estudiantes para revisión.
@@ -105,13 +113,22 @@
                         Bandeja de solicitudes de certificados al día.
                     <% } %>
                 </p>
+                <a href="/ejecutivo/solicitudes" class="item-arrow exec" style="text-decoration: none;">
+                    Resolver solicitudes →
+                </a>
             </div>
 
         </div>
 
-        <% if (listaPendientes.length > 0) { %>
-            <div class="bandeja-resumen-ejecutivo">
-                <h3>📌 Últimas solicitudes en estado PENDIENTE</h3>
+        <div class="bandeja-resumen-ejecutivo">
+            <div class="solicitudes-header-bar">
+                <h3>📌 Bandeja de Solicitudes en Estado PENDIENTE (<%= listaPendientes.length %>)</h3>
+                <a href="/ejecutivo/solicitudes" class="btn-nueva-solicitud">Ver Bandeja Completa</a>
+            </div>
+
+            <% if (listaPendientes.length === 0) { %>
+                <p style="color: #5A6A7E; font-size: 14px;">No existen solicitudes pendientes de resolución.</p>
+            <% } else { %>
                 <div class="tabla-responsive">
                     <table class="tabla-ejecutivo-pendientes">
                         <thead>
@@ -122,6 +139,7 @@
                                 <th>Motivo</th>
                                 <th>Fecha</th>
                                 <th>Estado</th>
+                                <th>Resolver Solicitud (RS5)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -135,13 +153,29 @@
                                         <%= item.fecha_solicitud ? new Date(item.fecha_solicitud).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—' %>
                                     </td>
                                     <td><span class="badge-pendiente-sm">PENDIENTE</span></td>
+                                    <td>
+                                        <form method="POST" action="/ejecutivo/solicitudes/<%= item.id %>/resolver" class="form-resolucion-inline">
+                                            <input type="hidden" name="origen" value="dashboard">
+                                            <select name="estado" class="select-resolucion" required>
+                                                <option value="APROBADA">APROBADA</option>
+                                                <option value="RECHAZADA">RECHAZADA</option>
+                                            </select>
+                                            <input
+                                                type="text"
+                                                name="observacion"
+                                                class="input-observacion-resolucion"
+                                                placeholder="Observación (obligatoria si rechaza)"
+                                            >
+                                            <button type="submit" class="btn-resolver-inline">Guardar</button>
+                                        </form>
+                                    </td>
                                 </tr>
                             <% }); %>
                         </tbody>
                     </table>
                 </div>
-            </div>
-        <% } %>
+            <% } %>
+        </div>
 
     </div>
 

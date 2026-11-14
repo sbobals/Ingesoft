@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Estudiante — UTFSM</title>
     <link rel="stylesheet" href="/CSS/paneles.css">
+    <link rel="stylesheet" href="/CSS/certificados.css">
     <style>
         .role-icon {
             width: 52px;
@@ -25,6 +26,7 @@
         <div class="topbar-content">
             <span class="logo-placeholder"><img src="/logo.png" alt="Logo USM"> UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA</span>
             <div class="topbar-right">
+                <a href="/mis-solicitudes">🔔 Mis Solicitudes</a> &nbsp;|&nbsp;
                 <a href="/perfil">👤 Mi Perfil</a> &nbsp;|&nbsp;
                 <a href="/logout">🔒 Salir</a> &nbsp;|&nbsp;  
                 <a href="#" onclick="window.open('/ayuda.png', 'ayuda', 'width=800,height=600,resizable=yes,scrollbars=yes')">❓ Ayuda</a>
@@ -42,6 +44,38 @@
                 <p>Portal de autoservicio estudiantil — información financiera personal.</p>
             </div>
         </div>
+
+        <%
+            const listaNotif = typeof notificacionesResolucion !== 'undefined' ? notificacionesResolucion : [];
+        %>
+        <% if (listaNotif.length > 0) { %>
+            <div class="notificaciones-estudiante-box">
+                <div class="notificaciones-estudiante-header">
+                    <span>🔔 Notificaciones de Resolución de Certificados (<%= listaNotif.length %>)</span>
+                    <a href="/mis-solicitudes" class="link-ver-todas">Ver todas mis solicitudes →</a>
+                </div>
+                <% listaNotif.forEach(function(sol) { %>
+                    <% if (sol.estado === 'APROBADA') { %>
+                        <div class="notificacion-resolucion aprobada">
+                            <div class="notif-res-texto">
+                                <strong>Solicitud #<%= sol.id %> (<%= sol.tipo_certificado %>):</strong>
+                                Su solicitud de certificado ha sido APROBADA y está disponible para descarga
+                            </div>
+                            <a href="/certificados/descargar/<%= sol.id %>" class="btn-descargar-pdf">
+                                ⬇ Descargar Certificado PDF
+                            </a>
+                        </div>
+                    <% } else if (sol.estado === 'RECHAZADA') { %>
+                        <div class="notificacion-resolucion rechazada">
+                            <div class="notif-res-texto">
+                                <strong>Solicitud #<%= sol.id %> (<%= sol.tipo_certificado %>):</strong>
+                                Su solicitud ha sido RECHAZADA. Motivo: <%= sol.observacion || 'Sin observación especificada' %>
+                            </div>
+                        </div>
+                    <% } %>
+                <% }); %>
+            </div>
+        <% } %>
 
         <div class="estado-card">
             <div class="estado-info">

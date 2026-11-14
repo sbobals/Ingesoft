@@ -68,6 +68,7 @@ CREATE TABLE solicitudes (
     estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'APROBADA', 'RECHAZADA')),
     observacion TEXT DEFAULT NULL,
     fecha_solicitud TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    fecha_resolucion TIMESTAMP DEFAULT NULL
+    fecha_resolucion TIMESTAMP DEFAULT NULL,
+    ejecutivo_id INT REFERENCES usuarios(id) DEFAULT NULL
 );
 

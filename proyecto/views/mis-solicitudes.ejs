@@ -33,7 +33,7 @@
             </div>
             <h2>Historial y Estado de Solicitudes</h2>
             <p>
-                Consulta el listado histórico y el estado actual de tus solicitudes de certificados.
+                Consulta el listado histórico, las notificaciones de resolución y descarga tus certificados aprobados.
             </p>
         </div>
     </div>
@@ -41,6 +41,39 @@
     <% if (typeof mensaje !== 'undefined' && mensaje) { %>
         <div class="alerta <%= mensaje.tipo %>">
             <%= mensaje.texto %>
+        </div>
+    <% } %>
+
+    <%
+        const listaNotif = typeof notificacionesResolucion !== 'undefined'
+            ? notificacionesResolucion
+            : (solicitudes || []).filter(s => s.estado === 'APROBADA' || s.estado === 'RECHAZADA');
+    %>
+    <% if (listaNotif.length > 0) { %>
+        <div class="notificaciones-estudiante-box">
+            <div class="notificaciones-estudiante-header">
+                <span>🔔 Avisos de Resolución (RS8)</span>
+            </div>
+            <% listaNotif.forEach(function(sol) { %>
+                <% if (sol.estado === 'APROBADA') { %>
+                    <div class="notificacion-resolucion aprobada">
+                        <div class="notif-res-texto">
+                            <strong>Solicitud #<%= sol.id %> (<%= sol.tipo_certificado %>):</strong>
+                            Su solicitud de certificado ha sido APROBADA y está disponible para descarga
+                        </div>
+                        <a href="/certificados/descargar/<%= sol.id %>" class="btn-descargar-pdf">
+                            ⬇ Descargar Certificado PDF
+                        </a>
+                    </div>
+                <% } else if (sol.estado === 'RECHAZADA') { %>
+                    <div class="notificacion-resolucion rechazada">
+                        <div class="notif-res-texto">
+                            <strong>Solicitud #<%= sol.id %> (<%= sol.tipo_certificado %>):</strong>
+                            Su solicitud ha sido RECHAZADA. Motivo: <%= sol.observacion || 'Sin observación especificada' %>
+                        </div>
+                    </div>
+                <% } %>
+            <% }); %>
         </div>
     <% } %>
 
@@ -66,6 +99,7 @@
                             <th>Motivo</th>
                             <th>Estado</th>
                             <th>Observación</th>
+                            <th>Certificado (PDF)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -97,6 +131,15 @@
                                 </td>
                                 <td class="col-observacion">
                                     <%= sol.observacion ? sol.observacion : '—' %>
+                                </td>
+                                <td>
+                                    <% if (estadoUpper === 'APROBADA') { %>
+                                        <a href="/certificados/descargar/<%= sol.id %>" class="btn-descargar-pdf">
+                                            ⬇ Descargar PDF
+                                        </a>
+                                    <% } else { %>
+                                        <span class="descarga-no-disponible">No disponible</span>
+                                    <% } %>
                                 </td>
                             </tr>
                         <% }); %>

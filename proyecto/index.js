@@ -276,9 +276,18 @@ app.get(
         Number(datos.pagos) -
         Number(datos.beneficios);
 
+      const notifResult = await pool.query(`
+        SELECT id, tipo_certificado, motivo, estado, observacion, fecha_solicitud, fecha_resolucion
+        FROM solicitudes
+        WHERE estudiante_id = $1
+          AND estado IN ('APROBADA', 'RECHAZADA')
+        ORDER BY fecha_resolucion DESC NULLS LAST, id DESC
+      `, [estudianteId]);
+
       res.render('estudiante', {
         usuario: req.session.usuario,
-        saldoPendiente
+        saldoPendiente,
+        notificacionesResolucion: notifResult.rows
       });
 
     } catch(err){
@@ -845,7 +854,7 @@ app.get('/pago/comprobante/:id',
     }
 });
 /*=================================
-    CERTIFICADOS Y SOLICITUDES (RS4 y RS6)
+    CERTIFICADOS Y SOLICITUDES (RS4, RS5, RS6, RS8, RS9)
 ===================================*/
 app.get('/certificados',
   verificarLogin,
@@ -869,6 +878,24 @@ app.get('/mis-solicitudes',
   verificarLogin,
   verificarRol('estudiante'),
   solicitudesController.listarMisSolicitudes
+);
+
+app.get('/certificados/descargar/:id',
+  verificarLogin,
+  verificarRol('estudiante'),
+  solicitudesController.descargarCertificado
+);
+
+app.get('/ejecutivo/solicitudes',
+  verificarLogin,
+  verificarRol('ejecutivo'),
+  solicitudesController.listarSolicitudesEjecutivo
+);
+
+app.post('/ejecutivo/solicitudes/:id/resolver',
+  verificarLogin,
+  verificarRol('ejecutivo'),
+  solicitudesController.resolverSolicitud
 );
 /*=================================
     RESUMEN ESTUDIANTE
