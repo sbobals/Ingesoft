@@ -1,3 +1,5 @@
+SET client_encoding = 'UTF8';
+
 TRUNCATE solicitudes RESTART IDENTITY CASCADE;
 TRUNCATE detalle_pagos RESTART IDENTITY CASCADE;
 TRUNCATE pagos RESTART IDENTITY CASCADE;
@@ -11,6 +13,7 @@ VALUES
 ('Juan Pérez'),
 ('María Soto'),
 ('Carlos Díaz');
+
 INSERT INTO usuarios (nombre, email, password, rol, estudiante_id)
 VALUES
 ('Administrador', 'admin@usm.cl', '1234', 'admin', NULL),
@@ -70,4 +73,3 @@ VALUES
 (1, 'Certificado de Alumno Regular', 'Trámite de renovación de pase escolar (TNE)', 'PENDIENTE', NULL, CURRENT_TIMESTAMP - INTERVAL '2 days', NULL, NULL),
 (1, 'Certificado de Arancel y Matrícula', 'Postulación a beca municipal', 'APROBADA', 'Documentación financiera al día.', CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP - INTERVAL '4 days', 2),
 (2, 'Seguro de Práctica', 'Práctica industrial de verano en empresa externa', 'PENDIENTE', NULL, CURRENT_TIMESTAMP - INTERVAL '1 day', NULL, NULL);
-

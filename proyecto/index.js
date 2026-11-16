@@ -24,7 +24,17 @@ app.use(session({
 }));
 
 app.use(express.static('public'));
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
+  if (req.session.usuario && req.session.usuario.nombre && req.session.usuario.nombre.includes('Ã')) {
+    try {
+      const r = await pool.query('SELECT nombre FROM usuarios WHERE id = $1', [req.session.usuario.id]);
+      if (r.rows[0]) {
+        req.session.usuario.nombre = r.rows[0].nombre;
+      }
+    } catch (_) {
+      // Ignorar error de refresco de nombre en sesión
+    }
+  }
 
   res.locals.usuario = req.session.usuario;
 
@@ -1599,8 +1609,8 @@ app.get('/historial/:year/:semester', async (req, res) => {
 /* =========================
    SERVIDOR
 ========================= */
-app.listen(port, () => {
-
-  console.log(`Servidor corriendo en http://localhost:${port}`);
-
+pool.inicializarBaseDeDatos().then(() => {
+  app.listen(port, () => {
+    console.log(`Servidor corriendo en http://localhost:${port}`);
+  });
 });

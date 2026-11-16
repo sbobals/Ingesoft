@@ -1,9 +1,11 @@
-CREATE TABLE estudiantes (
+SET client_encoding = 'UTF8';
+
+CREATE TABLE IF NOT EXISTS estudiantes (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE usuarios (
+CREATE TABLE IF NOT EXISTS usuarios (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -12,14 +14,14 @@ CREATE TABLE usuarios (
     estudiante_id INT REFERENCES estudiantes(id)
 );
 
-CREATE TABLE aranceles (
+CREATE TABLE IF NOT EXISTS aranceles (
     id SERIAL PRIMARY KEY,
     estudiante_id INT REFERENCES estudiantes(id),
     monto_total INT NOT NULL,
     periodo VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE deudas (
+CREATE TABLE IF NOT EXISTS deudas (
     id SERIAL PRIMARY KEY,
     estudiante_id INT REFERENCES estudiantes(id),
     arancel_id INT REFERENCES aranceles(id),
@@ -29,7 +31,7 @@ CREATE TABLE deudas (
     estado VARCHAR(50)
 );
 
-CREATE TABLE beneficios (
+CREATE TABLE IF NOT EXISTS beneficios (
     id SERIAL PRIMARY KEY,
     estudiante_id INT REFERENCES estudiantes(id),
     tipo VARCHAR(100),
@@ -37,7 +39,7 @@ CREATE TABLE beneficios (
     vigencia DATE
 );
 
-CREATE TABLE pagos (
+CREATE TABLE IF NOT EXISTS pagos (
     id SERIAL PRIMARY KEY,
     estudiante_id INT REFERENCES estudiantes(id),
     monto INT NOT NULL,
@@ -46,21 +48,21 @@ CREATE TABLE pagos (
     metodo_pago VARCHAR(30) DEFAULT 'tarjeta_credito'
 );
 
-CREATE TABLE detalle_pagos (
+CREATE TABLE IF NOT EXISTS detalle_pagos (
     id SERIAL PRIMARY KEY,
     pago_id INT REFERENCES pagos(id),
     deuda_id INT REFERENCES deudas(id),
     monto_aplicado INT NOT NULL
 );
 
-CREATE TABLE detalle_historico (
+CREATE TABLE IF NOT EXISTS detalle_historico (
     id INT REFERENCES estudiantes(id),
     ano INT,
     semestre INT,
     PRIMARY KEY (id, ano, semestre)
 );
 
-CREATE TABLE solicitudes (
+CREATE TABLE IF NOT EXISTS solicitudes (
     id SERIAL PRIMARY KEY,
     estudiante_id INT NOT NULL REFERENCES estudiantes(id) ON DELETE CASCADE,
     tipo_certificado VARCHAR(100) NOT NULL,
@@ -71,4 +73,3 @@ CREATE TABLE solicitudes (
     fecha_resolucion TIMESTAMP DEFAULT NULL,
     ejecutivo_id INT REFERENCES usuarios(id) DEFAULT NULL
 );
-
